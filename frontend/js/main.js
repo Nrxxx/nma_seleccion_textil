@@ -64,11 +64,19 @@ async function fetchPrendas() {
     try {
         const response = await fetch('http://localhost:3000/api/prendas');
         if (!response.ok) throw new Error('Backend no disponible');
+        
         const prendas = await response.json();
+        
+        // 🟢 Confirmación de lectura desde la base de datos MySQL
+        console.log('✅ ¡CONECTADO AL BACKEND! Datos cargados directamente desde MySQL:');
+        console.table(prendas);
+
         prendasGlobales = prendas;
         aplicarFiltrosCombinados();
     } catch (error) {
-        console.log('Modo diseño activo: Cargando datos de prueba.');
+        // 🟡 Aviso si el backend falla y recurre a prendasDePrueba
+        console.warn('⚠️ No se pudo conectar al backend. Cargando MOCK (prendasDePrueba):', error.message);
+        
         prendasGlobales = prendasDePrueba;
         aplicarFiltrosCombinados();
     }
