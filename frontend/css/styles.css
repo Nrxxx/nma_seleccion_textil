@@ -1,0 +1,528 @@
+:root {
+    --primary-color: #1a1a1a;
+    --accent-color: #2e7d32;
+    --bg-light: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --text-muted: #666666;
+    --border-color: #e0e0e0;
+    --font-main: 'Poppins', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-main);
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-color);
+}
+
+.top-bar {
+    background-color: var(--primary-color);
+    color: #fff;
+    text-align: center;
+    padding: 8px 15px;
+    font-size: 0.85rem;
+}
+
+.main-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    gap: 20px;
+}
+
+.brand-logo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.brand-logo span {
+    font-weight: 300;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+}
+
+.search-bar {
+    flex: 1;
+    max-width: 500px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    color: var(--text-muted);
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.cart-btn {
+    position: relative;
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.cart-badge {
+    background-color: #e53935;
+    color: white;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-weight: 600;
+}
+
+.hero-banner {
+    background: linear-gradient(135deg, #00f500 0%, #00f500 100%);
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+    max-width: 1200px;
+    margin: 20px auto 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.banner-content h1 {
+    font-size: 2rem;
+    margin: 10px 0;
+    color: #030303;
+}
+
+.banner-content p {
+    color: #010101;
+}
+
+/* .season-badge {
+    background: #fff;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #2e7d32;
+} */
+
+.carousel-arrow {
+    background: #ffffff99;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.catalog-container {
+    max-width: 1200px;
+    margin: 0 auto 60px;
+    padding: 0 20px;
+}
+
+.section-title {
+    margin-bottom: 30px;
+}
+
+.section-title h2 {
+    font-size: 1.5rem;
+}
+
+.section-title p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* --- Barra de Filtros (Chips) --- */
+.filter-chips {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none; /* Oculta scrollbar en Firefox */
+}
+
+.filter-chips::-webkit-scrollbar {
+    display: none; /* Oculta scrollbar en Chrome/Safari */
+}
+
+.chip {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-color);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.chip:hover {
+    border-color: var(--primary-color);
+    background-color: #f0f0f0;
+}
+
+.chip.active {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border-color: var(--primary-color);
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+}
+
+.product-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.product-image-container {
+    width: 100%;
+    height: 220px;
+    background-color: #f0f0f0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ajusta la foto sin deformarla */
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-img {
+    transform: scale(1.05); /* Efecto zoom suave al pasar el mouse */
+}
+
+.product-info {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.product-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.product-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.product-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: auto;
+}
+
+.add-cart-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-cart-btn:hover {
+    background-color: var(--accent-color);
+}
+
+/* --- Modal y Panel del Carrito --- */
+.cart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.cart-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.cart-modal {
+    width: 100%;
+    max-width: 380px;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+}
+
+.cart-overlay.active .cart-modal {
+    transform: translateX(0);
+}
+
+.cart-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.close-cart-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.cart-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-light);
+}
+
+.cart-item-info h4 {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.cart-item-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.remove-item-btn {
+    background: none;
+    border: none;
+    color: #e53935;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+}
+
+.empty-cart-msg {
+    text-align: center;
+    color: var(--text-muted);
+    margin-top: 40px;
+}
+
+.cart-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    background: #fff;
+}
+
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* responsive adjustments */
+
+/* ==========================================
+   MEDIA QUERIES - RESPONSIVE DESIGN (MOBILE)
+   ========================================== */
+
+@media (max-width: 768px) {
+    /* Reorganizar el header en 2 filas */
+    .header-container {
+        flex-wrap: wrap;
+        padding: 10px 15px;
+        gap: 12px;
+    }
+
+    .brand-logo {
+        font-size: 1.1rem;
+    }
+
+    .brand-logo span {
+        font-size: 0.9rem;
+    }
+
+    /* La barra de búsqueda pasa a ocupar toda la segunda fila */
+    .search-bar {
+        order: 3;
+        max-width: 100%;
+        width: 100%;
+        margin-top: 2px;
+    }
+
+    .search-bar input {
+        padding: 10px 15px 10px 38px;
+        font-size: 0.85rem;
+    }
+
+    /* Los botones de acción se alinean a la derecha en la primera fila */
+    .header-actions {
+        order: 2;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+
+    /* Ocultar texto del botón 'Usuario' en pantallas muy pequeñas para ahorrar espacio */
+    .action-btn:not(.cart-btn) {
+        font-size: 0;
+        padding: 8px;
+    }
+
+    .action-btn:not(.cart-btn) i {
+        font-size: 1.1rem;
+    }
+
+    /* Reducir tamaño del banner */
+    .hero-banner {
+        padding: 25px 10px;
+        margin: 15px 10px 25px;
+    }
+
+    .banner-content h1 {
+        font-size: 1.3rem;
+    }
+
+    .banner-content p {
+        font-size: 0.85rem;
+    }
+
+    .carousel-arrow {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* Reajustar la cuadrícula de productos para celulares */
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+
+    .product-image-container {
+        height: 140px;
+    }
+
+    .product-title {
+        font-size: 0.9rem;
+    }
+
+    .product-meta {
+        font-size: 0.75rem;
+    }
+
+    .product-price {
+        font-size: 0.95rem;
+    }
+
+    .add-cart-btn {
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+
+    /* Ajustar el modal del carrito para celulares */
+    .cart-modal {
+        max-width: 100%;
+    }
+}

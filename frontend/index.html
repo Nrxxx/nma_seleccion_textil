@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NMA | Selección Textil</title>
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Top Announcement Bar -->
+    <div class="top-bar">
+        Regístrate para obtener descuentos de hasta el 30% en tu compra
+    </div>
+
+    <!-- Header Principal -->
+    <header class="main-header">
+        <div class="header-container">
+            <a href="#" class="brand-logo">NMA <span>| Selección textil</span></a>
+            
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" placeholder="¿Qué tienes en mente hoy?" id="searchInput">
+            </div>
+
+            <div class="header-actions">
+                <button class="action-btn" title="Cuenta"><i class="fa-regular fa-user"></i> Usuario</button>
+                <button class="action-btn cart-btn" title="Carrito">
+                    <i class="fa-solid fa-cart-shopping"></i> Carrito
+                    <span class="cart-badge" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Banner Principal -->
+    <section class="hero-banner">
+        <button class="carousel-arrow left"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="banner-content">
+            <!-- <span class="season-badge">☀️ Colección Especial</span> -->
+            <h1>Nueva colección Verano Eco</h1>
+            <p>Ropa de segunda mano curada, única y sostenible.</p>
+        </div>
+        <button class="carousel-arrow right"><i class="fa-solid fa-chevron-right"></i></button>
+    </section>
+
+    <!-- Catálogo de Inventario -->
+    <main class="catalog-container">
+        <div class="section-title">
+            <!-- Barra de Filtros por Categoría -->
+            <div class="filter-chips" id="filterChips">
+                <button class="chip active" data-category="todas">Todas</button>
+                <button class="chip" data-category="chaqueta">Chaquetas</button>
+                <button class="chip" data-category="buco">Buzos / Buco</button>
+                <button class="chip" data-category="camisa">Camisas</button>
+                <button class="chip" data-category="pantalón">Pantalones / Jeans</button>
+            </div>
+            <h2>Inventario Disponible</h2>
+            <p>Prendas únicas registradas en el sistema</p>
+        </div>
+
+        <div class="products-grid" id="productsGrid">
+            <div class="loading-spinner">Cargando inventario desde la base de datos...</div>
+        </div>
+    </main>
+
+    <!-- Modal Lateral del Carrito -->
+    <div class="cart-overlay" id="cartOverlay">
+        <aside class="cart-modal">
+            <div class="cart-header">
+                <h3><i class="fa-solid fa-bag-shopping"></i> Tu Reserva</h3>
+                <button class="close-cart-btn" id="closeCartBtn">&times;</button>
+            </div>
+            
+            <div class="cart-body" id="cartBody">
+                <p class="empty-cart-msg">Aún no has agregado prendas al carrito.</p>
+            </div>
+
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>Total a Reservar:</span>
+                    <strong id="cartTotal">$0 COP</strong>
+                </div>
+                <button class="checkout-btn" onclick="confirmarReserva()">Confirmar Reserva</button>
+            </div>
+        </aside>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
