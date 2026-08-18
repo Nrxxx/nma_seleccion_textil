@@ -9,76 +9,32 @@ let prendasGlobales = [];
 let carrito = [];
 let categoriaActiva = 'todas';
 
-const prendasDePrueba = [
-    { 
-        id_prenda: 1, 
-        nombre_prenda: 'Chaqueta Denim Vintage', 
-        talla: 'M', 
-        marca: 'Levi\'s', 
-        precio: 85000, 
-        imagen_url: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&q=80' 
-    },
-    { 
-        id_prenda: 2, 
-        nombre_prenda: 'Buzo Oversize Algodón', 
-        talla: 'L', 
-        marca: 'Nike', 
-        precio: 65000, 
-        imagen_url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500&q=80' 
-    },
-    { 
-        id_prenda: 3, 
-        nombre_prenda: 'Camisa Caqui Eco', 
-        talla: 'S', 
-        marca: 'Zara', 
-        precio: 45000, 
-        imagen_url: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500&q=80' 
-    },
-    { 
-        id_prenda: 4, 
-        nombre_prenda: 'Pantalón Cargo Retro', 
-        talla: '30', 
-        marca: 'Pull&Bear', 
-        precio: 70000, 
-        imagen_url: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=500&q=80' 
-    },
-    { 
-        id_prenda: 5, 
-        nombre_prenda: 'Chaqueta Rompevientos Ultra', 
-        talla: 'XL', 
-        marca: 'Adidas', 
-        precio: 95000, 
-        imagen_url: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=500&q=80' 
-    },
-    { 
-        id_prenda: 6, 
-        nombre_prenda: 'Jeans Tiro Alto Classic', 
-        talla: '28', 
-        marca: 'American Eagle', 
-        precio: 60000, 
-        imagen_url: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80' 
-    }
-];
-
 async function fetchPrendas() {
     try {
         const response = await fetch('http://localhost:3000/api/prendas');
-        if (!response.ok) throw new Error('Backend no disponible');
+        if (!response.ok) throw new Error('No se pudo conectar con el servidor backend');
         
         const prendas = await response.json();
         
-        // 🟢 Confirmación de lectura desde la base de datos MySQL
-        console.log('✅ ¡CONECTADO AL BACKEND! Datos cargados directamente desde MySQL:');
+        console.log('✅ ¡CONECTADO AL BACKEND! Datos cargados desde Supabase/Base de Datos:');
         console.table(prendas);
 
         prendasGlobales = prendas;
         aplicarFiltrosCombinados();
     } catch (error) {
-        // 🟡 Aviso si el backend falla y recurre a prendasDePrueba
-        console.warn('⚠️ No se pudo conectar al backend. Cargando MOCK (prendasDePrueba):', error.message);
+        console.error('❌ Error al obtener las prendas:', error.message);
         
-        prendasGlobales = prendasDePrueba;
-        aplicarFiltrosCombinados();
+        // Mostrar mensaje visual de error en la grilla de productos
+        const productsGrid = document.getElementById('productsGrid');
+        if (productsGrid) {
+            productsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #d9534f;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
+                    <p><strong>Error de conexión con el servidor.</strong></p>
+                    <p style="font-size: 0.9rem; color: #666;">Asegúrate de que tu backend esté encendido y conectado a Supabase.</p>
+                </div>
+            `;
+        }
     }
 }
 
@@ -146,6 +102,7 @@ function setupCartModal() {
 
 function renderProducts(prendas) {
     const productsGrid = document.getElementById('productsGrid');
+    if (!productsGrid) return;
 
     if (!prendas || prendas.length === 0) {
         productsGrid.innerHTML = `
@@ -164,7 +121,7 @@ function renderProducts(prendas) {
         const precio = prenda.precio ? Number(prenda.precio).toLocaleString('es-CO') : '0';
         const id = prenda.id_prenda || prenda.id;
         
-        // Asignar imagen desde DB/Mock o imagen genérica
+        // Imagen proveniente de la base de datos (con fallback a una genérica si viene vacía)
         const imagenUrl = prenda.imagen_url || prenda.imagen || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80';
 
         return `
@@ -211,6 +168,8 @@ function updateCartUI() {
     const cartCount = document.getElementById('cartCount');
     const cartBody = document.getElementById('cartBody');
     const cartTotal = document.getElementById('cartTotal');
+
+    if (!cartCount || !cartBody || !cartTotal) return;
 
     cartCount.textContent = carrito.length;
 
