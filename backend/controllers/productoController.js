@@ -1,115 +1,58 @@
-import pool from '../config/database.js';
+import supabase from '../config/database.js';
 
-// 1. Obtener todas las prendas del inventario
-export const getPrendas = async (req, res) => {
+// Obtener todos los productos
+export const obtenerProductos = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM prendas ORDER BY fecha_ingreso DESC');
-    res.json({
-      success: true,
-      data: rows
-    });
+    const { data, error } = await supabase.from('productos').select('*');
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
-    console.error('Error al obtener prendas:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error en el servidor al consultar el inventario.'
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// 2. Registrar una nueva prenda en el sistema
-export const createPrenda = async (req, res) => {
-  const { nombre_prenda, categoria, talla, marca, precio, estado_prenda } = req.body;
-
-  // Validación básica de campos obligatorios
-  if (!nombre_prenda || !categoria || !talla || !precio) {
-    return res.status(400).json({
-      success: false,
-      message: 'Faltan campos obligatorios (nombre, categoria, talla o precio).'
-    });
-  }
-
+// Crear un producto
+export const crearProducto = async (req, res) => {
   try {
-    const query = `
-      INSERT INTO prendas (nombre_prenda, categoria, talla, marca, precio, estado_prenda) 
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const values = [nombre_prenda, categoria, talla, marca || 'Genérica', precio, estado_prenda || 'Excelente'];
-    
-    const [result] = await pool.query(query, values);
+    const { nombre, descripcion, precio, stock, categoria } = req.body;
+    const { data, error } = await supabase
+      .from('productos')
+      .insert([{ nombre, descripcion, precio, stock, categoria }])
+      .select();
 
-    res.status(201).json({
-      success: true,
-      message: 'Prenda registrada de forma impecable.',
-      id_prenda: result.insertId
-    });
+    if (error) throw error;
+    res.status(201).json({ mensaje: 'Producto creado exitosamente', producto: data[0] });
   } catch (error) {
-    console.error('Error al insertar prenda:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error en el servidor al registrar la prenda.'
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// 3. Eliminar una prenda por su ID
-export const deletePrenda = async (req, res) => {
-  const { id } = req.params;
-
+// Actualizar un producto
+export const actualizarProducto = async (req, res) => {
   try {
-    const [result] = await pool.query('DELETE FROM prendas WHERE id_prenda = ?', [id]);
+    const { id } = req.params;
+    const { nombre, descripcion, precio, stock, categoria } = req.body;
+    const { data, error } = await supabase
+      .from('productos')
+      .update({ nombre, descripcion, precio, stock, categoria })
+      .eq('id', id)
+      .select();
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No se encontró la prenda que deseas eliminar.'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Prenda eliminada correctamente del inventario.'
-    });
+    if (error) throw error;
+    res.json({ mensaje: 'Producto actualizado exitosamente', producto: data[0] });
   } catch (error) {
-    console.error('Error al eliminar prenda:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error en el servidor al intentar eliminar la prenda.'
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// 4. Actualizar los datos de una prenda
-export const updatePrenda = async (req, res) => {
-  const { id } = req.params;
-  const { nombre_prenda, categoria, talla, marca, precio, estado_prenda, disponibilidad } = req.body;
-
+// Eliminar un producto
+export const eliminarProducto = async (req, res) => {
   try {
-    const query = `
-      UPDATE prendas 
-      SET nombre_prenda = ?, categoria = ?, talla = ?, marca = ?, precio = ?, estado_prenda = ?, disponibilidad = ?
-      WHERE id_prenda = ?
-    `;
-    const values = [nombre_prenda, categoria, talla, marca, precio, estado_prenda, disponibilidad, id];
-
-    const [result] = await pool.query(query, values);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No se encontró la prenda para actualizar.'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Prenda actualizada de forma impecable.'
-    });
+    const { id } = req.params;
+    const { error } = await supabase.from('productos').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ mensaje: 'Producto eliminado exitosamente' });
   } catch (error) {
-    console.error('Error al actualizar prenda:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error en el servidor al actualizar la prenda.'
-    });
+    res.status(500).json({ error: error.message });
   }
 };

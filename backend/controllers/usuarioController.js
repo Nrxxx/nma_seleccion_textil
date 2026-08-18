@@ -1,64 +1,49 @@
-import pool from '../config/database.js';
+import supabase from '../config/database.js';
 
-// 1. Obtener todos los usuarios registrados
-export const getUsuarios = async (req, res) => {
+// Obtener usuarios
+export const obtenerUsuarios = async (req, res) => {
   try {
-    // Traemos los datos básicos (excluyendo la contraseña por seguridad)
-    const [rows] = await pool.query('SELECT id_usuario, nombre, correo, rol, fecha_creacion FROM usuarios ORDER BY fecha_creacion DESC');
-    res.json({
-      success: true,
-      data: rows
-    });
+    const { data, error } = await supabase.from('usuarios').select('*');
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
-    console.error('Error al obtener usuarios:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error en el servidor al consultar los usuarios.'
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// 2. Registrar un nuevo usuario (Administrador)
-export const createUsuario = async (req, res) => {
-  const { nombre, correo, contrasena, rol } = req.body;
-
-  // Validación de campos requeridos por tu base de datos
-  if (!nombre || !correo || !contrasena) {
-    return res.status(400).json({
-      success: false,
-      message: 'Faltan campos obligatorios (nombre, correo o contrasena).'
-    });
-  }
-
+// Registrar usuario
+export const registrarUsuario = async (req, res) => {
   try {
-    const query = `
-      INSERT INTO usuarios (nombre, correo, contrasena, rol) 
-      VALUES (?, ?, ?, ?)
-    `;
-    // Si no mandan rol, el sistema le asigna 'admin' por defecto
-    const values = [nombre, correo, contrasena, rol || 'admin'];
-    
-    const [result] = await pool.query(query, values);
+    const { nombre, email, password, rol } = req.body;
+    const { data, error } = await supabase
+      .from('usuarios')
+      .insert([{ nombre, email, password, rol }])
+      .select();
 
-    res.status(201).json({
-      success: true,
-      message: 'Usuario administrador registrado correctamente.',
-      id_usuario: result.insertId
-    });
+    if (error) throw error;
+    res.status(201).json({ mensaje: 'Usuario registrado con éxito', usuario: data[0] });
   } catch (error) {
-    console.error('Error al insertar usuario:', error.message);
-    
-    // Validar si el correo ya existe (llave única en SQL)
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({
-        success: false,
-        message: 'El correo electrónico ya se encuentra registrado.'
-      });
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Login de usuario
+export const loginUsuario = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('email', email)
+      .eq('password', password)
+      .single();
+
+    if (error || !data) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    res.status(500).json({
-      success: false,
-      message: 'Error en el servidor al registrar el usuario.'
-    });
+    res.json({ mensaje: 'Login exitoso', usuario: data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

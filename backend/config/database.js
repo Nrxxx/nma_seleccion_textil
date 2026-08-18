@@ -1,28 +1,17 @@
-import mysql from 'mysql2/promise';
+import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-// Cargar las variables de entorno
 dotenv.config();
 
-// Crear el pool de conexiones
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-// Prueba rápida de conexión
-try {
-  const connection = await pool.getConnection();
-  console.log('🚀 ¡Conexión exitosa a MySQL (nma_seleccion_textil)!');
-  connection.release();
-} catch (error) {
-  console.error('❌ Error crítico al conectar a la base de datos:', error.message);
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Faltan las variables de entorno SUPABASE_URL o SUPABASE_KEY');
 }
 
-export default pool;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+console.log('🚀 ¡Cliente de Supabase inicializado correctamente para Nma Selección Textil!');
+
+export default supabase;
