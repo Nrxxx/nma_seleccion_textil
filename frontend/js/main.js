@@ -11,13 +11,12 @@ let categoriaActiva = 'todas';
 
 async function fetchPrendas() {
     try {
-        // Cambiado puerto 3000 -> 5000 y endpoint /api/prendas -> /api/productos
         const response = await fetch('http://localhost:5000/api/productos');
         if (!response.ok) throw new Error('No se pudo conectar con el servidor backend');
         
         const prendas = await response.json();
         
-        console.log('✅ ¡CONECTADO AL BACKEND! Datos cargados desde Supabase/Base de Datos:');
+        console.log('✅ Datos cargados desde el servidor:');
         console.table(prendas);
 
         prendasGlobales = prendas;
@@ -25,7 +24,6 @@ async function fetchPrendas() {
     } catch (error) {
         console.error('❌ Error al obtener las prendas:', error.message);
         
-        // Mostrar mensaje visual de error en la grilla de productos
         const productsGrid = document.getElementById('productsGrid');
         if (productsGrid) {
             productsGrid.innerHTML = `
@@ -39,7 +37,6 @@ async function fetchPrendas() {
     }
 }
 
-// Configuración de los botones de categoría
 function setupCategoryFilters() {
     const chips = document.querySelectorAll('.chip');
     
@@ -54,7 +51,6 @@ function setupCategoryFilters() {
     });
 }
 
-// Escuchar cambios en la barra de búsqueda
 function setupSearchFilter() {
     const searchInput = document.getElementById('searchInput');
     if (!searchInput) return;
@@ -64,7 +60,6 @@ function setupSearchFilter() {
     });
 }
 
-// Función centralizada para filtrar por CORTES Y BÚSQUEDA al mismo tiempo
 function aplicarFiltrosCombinados() {
     const searchInput = document.getElementById('searchInput');
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -74,10 +69,7 @@ function aplicarFiltrosCombinados() {
         const marca = (prenda.marca || '').toLowerCase();
         const talla = (prenda.talla || '').toLowerCase();
 
-        // 1. Validar Filtro por Búsqueda de Texto
         const coincideBusqueda = nombre.includes(query) || marca.includes(query) || talla.includes(query);
-
-        // 2. Validar Filtro por Categoria (Chip)
         const coincideCategoria = (categoriaActiva === 'todas') || nombre.includes(categoriaActiva);
 
         return coincideBusqueda && coincideCategoria;
@@ -122,7 +114,6 @@ function renderProducts(prendas) {
         const precio = prenda.precio ? Number(prenda.precio).toLocaleString('es-CO') : '0';
         const id = prenda.id_prenda || prenda.id;
         
-        // Imagen proveniente de la base de datos (con fallback a una genérica si viene vacía)
         const imagenUrl = prenda.imagen_url || prenda.imagen || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80';
 
         return `
@@ -207,9 +198,11 @@ async function confirmarReserva() {
         return;
     }
 
+    // Obtener sesión guardada si el usuario está logueado
+    const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma')) || null;
+
     const totalReserva = carrito.reduce((sum, item) => sum + Number(item.precio || 0), 0);
 
-    // Mapeamos las prendas para enviarlas en el campo 'detalles'
     const detallesVenta = carrito.map(item => ({
         id_prenda: item.id_prenda || item.id,
         nombre_prenda: item.nombre_prenda || item.nombre,
@@ -219,7 +212,7 @@ async function confirmarReserva() {
     }));
 
     const payload = {
-        usuario_id: null, // Nulo temporalmente hasta integrar la autenticación
+        usuario_id: usuarioSesion ? usuarioSesion.id : null,
         total: totalReserva,
         detalles: detallesVenta
     };
@@ -235,12 +228,9 @@ async function confirmarReserva() {
 
         alert('¡Reserva realizada con éxito! Nos pondremos en contacto para coordinar la entrega.');
 
-        // Limpiar el carrito local y refrescar la vista
         carrito = [];
         updateCartUI();
         document.getElementById('cartOverlay').classList.remove('active');
-        
-        // Recargar prendas para reflejar el estado en la tienda
         fetchPrendas();
     } catch (error) {
         console.error('❌ Error en reserva:', error.message);

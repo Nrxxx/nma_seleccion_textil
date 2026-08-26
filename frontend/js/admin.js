@@ -1,10 +1,23 @@
 const API_URL = 'http://localhost:5000/api/productos';
+const API_VENTAS = 'http://localhost:5000/api/ventas';
 let prendas = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+    validarPermisosAdmin();
     cargarPrendasAdmin();
+    cargarVentasAdmin();
     setupModalEvents();
 });
+
+// Proteger el acceso al panel
+function validarPermisosAdmin() {
+    const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
+
+    if (!usuarioSesion || usuarioSesion.rol !== 'admin') {
+        alert('Acceso restringido. Inicia sesión como administrador.');
+        window.location.href = 'login.html';
+    }
+}
 
 async function cargarPrendasAdmin() {
     try {
@@ -14,14 +27,19 @@ async function cargarPrendasAdmin() {
         renderTabla(prendas);
     } catch (err) {
         console.error('❌ Error:', err.message);
-        document.getElementById('adminTableBody').innerHTML = `
-            <tr><td colspan="6" style="text-align: center; color: #c53030;">Error al conectar con el servidor.</td></tr>
-        `;
+        const tbody = document.getElementById('adminTableBody');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr><td colspan="6" style="text-align: center; color: #c53030;">Error al conectar con el servidor.</td></tr>
+            `;
+        }
     }
 }
 
 function renderTabla(lista) {
     const tbody = document.getElementById('adminTableBody');
+    if (!tbody) return;
+
     if (!lista || lista.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No hay prendas en inventario.</td></tr>';
         return;
@@ -49,20 +67,59 @@ function renderTabla(lista) {
     }).join('');
 }
 
+async function cargarVentasAdmin() {
+    const tbodyVentas = document.getElementById('ventasTableBody');
+    if (!tbodyVentas) return;
+
+    try {
+        const res = await fetch(API_VENTAS);
+        if (!res.ok) throw new Error('Error al obtener historial de ventas');
+        
+        const ventas = await res.json();
+
+        if (!ventas || ventas.length === 0) {
+            tbodyVentas.innerHTML = '<tr><td colspan="4" style="text-align: center;">No hay reservas o ventas registradas.</td></tr>';
+            return;
+        }
+
+        tbodyVentas.innerHTML = ventas.map(v => {
+            const fecha = v.created_at ? new Date(v.created_at).toLocaleDateString('es-CO') : 'N/A';
+            const total = Number(v.total || 0).toLocaleString('es-CO');
+            const cliente = v.usuarios ? v.usuarios.nombre : 'Invitado / Anónimo';
+
+            return `
+                <tr>
+                    <td>#${v.id_venta || v.id}</td>
+                    <td>${escapeHTML(cliente)}</td>
+                    <td>$${total} COP</td>
+                    <td>${fecha}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('❌ Error al cargar ventas:', err.message);
+        tbodyVentas.innerHTML = `
+            <tr><td colspan="4" style="text-align: center; color: #c53030;">Error al cargar reservas.</td></tr>
+        `;
+    }
+}
+
 function setupModalEvents() {
     const openBtn = document.getElementById('openModalBtn');
     const closeBtn = document.getElementById('closeModalBtn');
     const overlay = document.getElementById('adminModalOverlay');
     const form = document.getElementById('prendaForm');
 
-    openBtn.addEventListener('click', () => abrirModalCrear());
-    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    if (openBtn) openBtn.addEventListener('click', () => abrirModalCrear());
+    if (closeBtn) closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
     
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('active');
-    });
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.classList.remove('active');
+        });
+    }
 
-    form.addEventListener('submit', guardarPrenda);
+    if (form) form.addEventListener('submit', guardarPrenda);
 }
 
 function abrirModalCrear() {

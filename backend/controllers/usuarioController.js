@@ -17,7 +17,7 @@ export const registrarUsuario = async (req, res) => {
     const { nombre, email, password, rol } = req.body;
     const { data, error } = await supabase
       .from('usuarios')
-      .insert([{ nombre, email, password, rol }])
+      .insert([{ nombre, email, password, rol: rol || 'cliente' }])
       .select();
 
     if (error) throw error;
