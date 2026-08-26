@@ -1,11 +1,13 @@
 import express from 'express';
-import { getPrendas, createPrenda, deletePrenda, updatePrenda } from '../controllers/productoController.js';
+import { obtenerProductos, crearProducto } 
+from '../controllers/productoController.js';
 
 const router = express.Router();
 
-router.get('/', getPrendas);          // Leer todas
-router.post('/', createPrenda);        // Crear una
-router.put('/:id', updatePrenda);      // Actualizar una por ID (Ej: /api/prendas/1)
-router.delete('/:id', deletePrenda);   // Eliminar una por ID (Ej: /api/prendas/1)
+// Leer todos los productos
+router.get('/', obtenerProductos);
+
+// Crear un producto
+router.post('/', crearProducto);
 
 export default router;
