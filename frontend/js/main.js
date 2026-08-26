@@ -11,7 +11,8 @@ let categoriaActiva = 'todas';
 
 async function fetchPrendas() {
     try {
-        const response = await fetch('http://localhost:3000/api/prendas');
+        // Cambiado puerto 3000 -> 5000 y endpoint /api/prendas -> /api/productos
+        const response = await fetch('http://localhost:5000/api/productos');
         if (!response.ok) throw new Error('No se pudo conectar con el servidor backend');
         
         const prendas = await response.json();
