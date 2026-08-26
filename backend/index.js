@@ -1,21 +1,20 @@
-import express from 'express';
 import dotenv from 'dotenv';
-import pool from './config/database.js';
+dotenv.config();
+
+import express from 'express';
 import productoRoutes from './routes/productoRoutes.js';
 import usuarioRoutes from './routes/usuarioRoutes.js';
-import ventaRoutes from './routes/ventaRoutes.js'; // <- 1. Importamos la ruta de ventas
-
-dotenv.config();
+import ventaRoutes from './routes/ventaRoutes.js';
 
 const app = express();
 app.use(express.json());
 
 // Enlace de todos los módulos a sus URLs bases
-app.use('/api/prendas', productoRoutes);
+app.use('/api/productos', productoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/ventas', ventaRoutes); // <- 2. Conectamos la URL base de ventas
+app.use('/api/ventas', ventaRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.get('/', (req, res) => {
   res.send('Servidor ejecutándose correctamente de forma impecable.');
