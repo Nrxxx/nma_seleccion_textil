@@ -201,15 +201,51 @@ function updateCartUI() {
     cartTotal.textContent = `$${total.toLocaleString('es-CO')} COP`;
 }
 
-function confirmarReserva() {
+async function confirmarReserva() {
     if (carrito.length === 0) {
         alert('Tu carrito está vacío.');
         return;
     }
-    alert(`¡Reserva confirmada por ${carrito.length} prenda(s)!`);
-    carrito = [];
-    updateCartUI();
-    document.getElementById('cartOverlay').classList.remove('active');
+
+    const totalReserva = carrito.reduce((sum, item) => sum + Number(item.precio || 0), 0);
+
+    // Mapeamos las prendas para enviarlas en el campo 'detalles'
+    const detallesVenta = carrito.map(item => ({
+        id_prenda: item.id_prenda || item.id,
+        nombre_prenda: item.nombre_prenda || item.nombre,
+        precio: item.precio,
+        talla: item.talla,
+        marca: item.marca
+    }));
+
+    const payload = {
+        usuario_id: null, // Nulo temporalmente hasta integrar la autenticación
+        total: totalReserva,
+        detalles: detallesVenta
+    };
+
+    try {
+        const response = await fetch('http://localhost:5000/api/ventas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('No se pudo procesar la reserva en el servidor');
+
+        alert('¡Reserva realizada con éxito! Nos pondremos en contacto para coordinar la entrega.');
+
+        // Limpiar el carrito local y refrescar la vista
+        carrito = [];
+        updateCartUI();
+        document.getElementById('cartOverlay').classList.remove('active');
+        
+        // Recargar prendas para reflejar el estado en la tienda
+        fetchPrendas();
+    } catch (error) {
+        console.error('❌ Error en reserva:', error.message);
+        alert('Ocurrió un error al guardar tu reserva.');
+    }
 }
 
 function escapeHTML(str) {
