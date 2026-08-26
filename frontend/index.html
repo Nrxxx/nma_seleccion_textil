@@ -28,8 +28,15 @@
                 <input type="text" placeholder="¿Qué tienes en mente hoy?" id="searchInput">
             </div>
 
+            <!-- Acciones de Usuario y Carrito -->
             <div class="header-actions">
-                <button class="action-btn" title="Cuenta"><i class="fa-regular fa-user"></i> Usuario</button>
+                <div class="user-nav" style="display: flex; align-items: center; gap: 10px;">
+                    <span id="userName" style="font-size: 0.9rem; font-weight: 500;"></span>
+                    <button class="action-btn" id="authBtn" title="Cuenta">
+                        <i class="fa-regular fa-user"></i> <span id="authText">Iniciar Sesión</span>
+                    </button>
+                </div>
+                
                 <button class="action-btn cart-btn" title="Carrito">
                     <i class="fa-solid fa-cart-shopping"></i> Carrito
                     <span class="cart-badge" id="cartCount">0</span>
@@ -42,7 +49,6 @@
     <section class="hero-banner">
         <button class="carousel-arrow left"><i class="fa-solid fa-chevron-left"></i></button>
         <div class="banner-content">
-            <!-- <span class="season-badge">☀️ Colección Especial</span> -->
             <h1>Nueva colección Verano Eco</h1>
             <p>Ropa de segunda mano curada, única y sostenible.</p>
         </div>
@@ -52,7 +58,6 @@
     <!-- Catálogo de Inventario -->
     <main class="catalog-container">
         <div class="section-title">
-            <!-- Barra de Filtros por Categoría -->
             <div class="filter-chips" id="filterChips">
                 <button class="chip active" data-category="todas">Todas</button>
                 <button class="chip" data-category="chaqueta">Chaquetas</button>
@@ -91,6 +96,8 @@
         </aside>
     </div>
 
+    <!-- Cargar Scripts -->
+    <script src="js/auth.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
