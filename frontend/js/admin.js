@@ -5,7 +5,7 @@ let prendas = [];
 document.addEventListener('DOMContentLoaded', () => {
     validarPermisosAdmin();
     cargarPrendasAdmin();
-    cargarVentasAdmin();
+    cargarReservasAdmin();
     setupModalEvents();
 });
 
@@ -18,6 +18,109 @@ function validarPermisosAdmin() {
         window.location.href = 'login.html';
     }
 }
+
+// ==========================================
+// GESTIÓN DE RESERVAS Y ABONOS PENDIENTES
+// ==========================================
+
+async function cargarReservasAdmin() {
+    const tbodyReservas = document.getElementById('tablaReservasBody');
+    if (!tbodyReservas) return;
+
+    try {
+        const res = await fetch(API_VENTAS);
+        if (!res.ok) throw new Error('Error al obtener reservas');
+        
+        const ventas = await res.json();
+        
+        // Filtrar solo las ventas que están pendientes de abono
+        const pendientes = ventas.filter(v => v.estado_pago === 'pendiente_abono');
+
+        if (!pendientes || pendientes.length === 0) {
+            tbodyReservas.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No hay abonos pendientes por revisar.</td></tr>';
+            return;
+        }
+
+        const formatearCOP = (val) => new Intl.NumberFormat('es-CO', { 
+            style: 'currency', 
+            currency: 'COP', 
+            maximumFractionDigits: 0 
+        }).format(val);
+
+        tbodyReservas.innerHTML = pendientes.map(v => {
+            const idVenta = v.id_venta || v.id;
+            const total = formatearCOP(v.total || 0);
+            const abono = formatearCOP(v.monto_abonado || 0);
+            const expiracion = v.fecha_expiracion ? new Date(v.fecha_expiracion).toLocaleString('es-CO') : '24 horas';
+
+            return `
+                <tr>
+                    <td><strong>#${idVenta}</strong></td>
+                    <td>${total}</td>
+                    <td>${abono}</td>
+                    <td><span class="badge-status badge-pendiente">${escapeHTML(v.estado_pago)}</span></td>
+                    <td>${expiracion}</td>
+                    <td>
+                        <button onclick="aprobarAbono(${idVenta})" class="btn-admin-action btn-approve" title="Confirmar Abono Nequi">
+                            <i class="fa-solid fa-check"></i> Aprobar
+                        </button>
+                        <button onclick="cancelarReserva(${idVenta})" class="btn-admin-action btn-cancel" title="Cancelar y Liberar Prenda">
+                            <i class="fa-solid fa-xmark"></i> Liberar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('❌ Error al cargar reservas:', err.message);
+        tbodyReservas.innerHTML = `
+            <tr><td colspan="6" style="text-align: center; color: #c53030;">Error al conectar con el servidor de ventas.</td></tr>
+        `;
+    }
+}
+
+async function aprobarAbono(idVenta) {
+    if (!confirm(`¿Confirmas que recibiste la transferencia en Nequi para la reserva #${idVenta}?`)) return;
+
+    try {
+        const response = await fetch(`${API_VENTAS}/${idVenta}/aprobar`, { 
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Error al aprobar el abono');
+
+        alert('¡Abono verificado y reserva confirmada!');
+        cargarReservasAdmin();
+    } catch (err) {
+        console.error('❌ Error:', err.message);
+        alert('No se pudo aprobar la reserva.');
+    }
+}
+
+async function cancelarReserva(idVenta) {
+    if (!confirm(`¿Deseas cancelar la reserva #${idVenta} y poner la prenda nuevamente disponible en el catálogo?`)) return;
+
+    try {
+        const response = await fetch(`${API_VENTAS}/${idVenta}/cancelar`, { 
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Error al cancelar la reserva');
+
+        alert('Reserva cancelada y prenda liberada.');
+        cargarReservasAdmin();
+        cargarPrendasAdmin(); // Recargar inventario para actualizar estados si aplica
+    } catch (err) {
+        console.error('❌ Error:', err.message);
+        alert('No se pudo cancelar la reserva.');
+    }
+}
+
+// ==========================================
+// GESTIÓN DE INVENTARIO
+// ==========================================
 
 async function cargarPrendasAdmin() {
     try {
@@ -65,43 +168,6 @@ function renderTabla(lista) {
             </tr>
         `;
     }).join('');
-}
-
-async function cargarVentasAdmin() {
-    const tbodyVentas = document.getElementById('ventasTableBody');
-    if (!tbodyVentas) return;
-
-    try {
-        const res = await fetch(API_VENTAS);
-        if (!res.ok) throw new Error('Error al obtener historial de ventas');
-        
-        const ventas = await res.json();
-
-        if (!ventas || ventas.length === 0) {
-            tbodyVentas.innerHTML = '<tr><td colspan="4" style="text-align: center;">No hay reservas o ventas registradas.</td></tr>';
-            return;
-        }
-
-        tbodyVentas.innerHTML = ventas.map(v => {
-            const fecha = v.created_at ? new Date(v.created_at).toLocaleDateString('es-CO') : 'N/A';
-            const total = Number(v.total || 0).toLocaleString('es-CO');
-            const cliente = v.usuarios ? v.usuarios.nombre : 'Invitado / Anónimo';
-
-            return `
-                <tr>
-                    <td>#${v.id_venta || v.id}</td>
-                    <td>${escapeHTML(cliente)}</td>
-                    <td>$${total} COP</td>
-                    <td>${fecha}</td>
-                </tr>
-            `;
-        }).join('');
-    } catch (err) {
-        console.error('❌ Error al cargar ventas:', err.message);
-        tbodyVentas.innerHTML = `
-            <tr><td colspan="4" style="text-align: center; color: #c53030;">Error al cargar reservas.</td></tr>
-        `;
-    }
 }
 
 function setupModalEvents() {

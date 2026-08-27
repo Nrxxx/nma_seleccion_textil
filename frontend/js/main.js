@@ -37,55 +37,7 @@ async function fetchPrendas() {
     }
 }
 
-async function confirmarReserva() {
-    if (carrito.length === 0) {
-        alert('El carrito está vacío.');
-        return;
-    }
 
-    const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
-    const total = carrito.reduce((sum, p) => sum + Number(p.precio || 0), 0);
-
-    const payload = {
-        usuario_id: usuarioSesion ? usuarioSesion.id : null,
-        total: total,
-        detalles: carrito
-    };
-
-    try {
-        const response = await fetch('http://localhost:5000/api/ventas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) throw new Error('Error al registrar la reserva.');
-
-        // Actualizar estado de las prendas reservadas en la BD
-        for (const item of carrito) {
-            const prendaId = item.id_prenda || item.id;
-            await fetch(`http://localhost:5000/api/productos/${prendaId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: 'reservado' })
-            });
-        }
-
-        alert('¡Reserva realizada con éxito!');
-
-        // Vaciar carrito
-        carrito = [];
-        localStorage.removeItem('cart_nma');
-        if (typeof updateCartUI === 'function') updateCartUI();
-
-        document.getElementById('cartOverlay').classList.remove('active');
-        fetchPrendas();
-
-    } catch (error) {
-        console.error('❌ Error en la reserva:', error.message);
-        alert('No se pudo procesar la reserva. Intenta de nuevo.');
-    }
-}
 
 function setupCategoryFilters() {
     const chips = document.querySelectorAll('.chip');
@@ -264,10 +216,9 @@ async function confirmarReserva() {
         return;
     }
 
-    // Obtener sesión guardada si el usuario está logueado
     const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma')) || null;
-
     const totalReserva = carrito.reduce((sum, item) => sum + Number(item.precio || 0), 0);
+    const abono50 = totalReserva / 2;
 
     const detallesVenta = carrito.map(item => ({
         id_prenda: item.id_prenda || item.id,
@@ -292,12 +243,43 @@ async function confirmarReserva() {
 
         if (!response.ok) throw new Error('No se pudo procesar la reserva en el servidor');
 
-        alert('¡Reserva realizada con éxito! Nos pondremos en contacto para coordinar la entrega.');
+        const formatearCOP = (val) => new Intl.NumberFormat('es-CO', { 
+            style: 'currency', 
+            currency: 'COP', 
+            maximumFractionDigits: 0 
+        }).format(val);
 
+        // Identificador Bre-B / Nequi de NMA Selección Textil
+        const llaveNequi = "@NEQUINIC0664";
+
+        alert(
+            `¡RESERVA REGISTRADA CON ÉXITO!\n\n` +
+            `===================================\n` +
+            `💵 Total Compra: ${formatearCOP(totalReserva)}\n` +
+            `💰 ABONO REQUERIDO (50%): ${formatearCOP(abono50)}\n` +
+            `===================================\n\n` +
+            `🔑 Llave / Usuario Nequi: ${llaveNequi}\n` +
+            `🏢 Comercio: NMA Selección Textil\n\n` +
+            `⏳ Tienes 24 horas para transferir el abono de ${formatearCOP(abono50)}.\n` +
+            `Al presionar Aceptar, te redirigiremos a WhatsApp con los datos listos para enviar tu comprobante.`
+        );
+
+        // Limpieza de interfaz y carrito
         carrito = [];
         updateCartUI();
         document.getElementById('cartOverlay').classList.remove('active');
         fetchPrendas();
+
+        // Redirección a WhatsApp con los datos de Nequi/Bre-B prellenados
+        const numeroWhatsApp = "3123342385"; // Ajusta a tu número de WhatsApp de atención
+        const mensajeWhatsApp = encodeURIComponent(
+            `Hola, acabo de realizar una reserva por ${formatearCOP(totalReserva)}.\n\n` +
+            `Abonaré el 50% (${formatearCOP(abono50)}) a la llave Nequi/Bre-B: ${llaveNequi}\n\n` +
+            `Adjunto mi comprobante de pago:`
+        );
+
+        window.location.href = `https://wa.me/57${numeroWhatsApp}?text=${mensajeWhatsApp}`;
+
     } catch (error) {
         console.error('❌ Error en reserva:', error.message);
         alert('Ocurrió un error al guardar tu reserva.');
