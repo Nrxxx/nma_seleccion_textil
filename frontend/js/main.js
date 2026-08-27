@@ -211,12 +211,21 @@ function updateCartUI() {
 }
 
 async function confirmarReserva() {
+    // 1. Validar que el usuario haya iniciado sesión
+    const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
+
+    if (!usuarioSesion) {
+        alert('Debes iniciar sesión para poder reservar una prenda.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // 2. Validar que el carrito no esté vacío
     if (carrito.length === 0) {
         alert('Tu carrito está vacío.');
         return;
     }
 
-    const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma')) || null;
     const totalReserva = carrito.reduce((sum, item) => sum + Number(item.precio || 0), 0);
     const abono50 = totalReserva / 2;
 
@@ -229,7 +238,7 @@ async function confirmarReserva() {
     }));
 
     const payload = {
-        usuario_id: usuarioSesion ? usuarioSesion.id : null,
+        usuario_id: usuarioSesion.id || usuarioSesion.id_usuario,
         total: totalReserva,
         detalles: detallesVenta
     };
@@ -271,7 +280,7 @@ async function confirmarReserva() {
         fetchPrendas();
 
         // Redirección a WhatsApp con los datos de Nequi/Bre-B prellenados
-        const numeroWhatsApp = "3123342385"; // Ajusta a tu número de WhatsApp de atención
+        const numeroWhatsApp = "3123342385";
         const mensajeWhatsApp = encodeURIComponent(
             `Hola, acabo de realizar una reserva por ${formatearCOP(totalReserva)}.\n\n` +
             `Abonaré el 50% (${formatearCOP(abono50)}) a la llave Nequi/Bre-B: ${llaveNequi}\n\n` +
