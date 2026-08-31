@@ -28,8 +28,12 @@
                 <input type="text" placeholder="¿Qué tienes en mente hoy?" id="searchInput">
             </div>
 
-            <!-- Acciones de Usuario y Carrito -->
+            <!-- Acciones de Usuario, Publicar y Carrito -->
             <div class="header-actions">
+                <button class="action-btn" onclick="abrirModalPublicar()" title="Vender o Publicar Prenda" style="background: #111; color: #fff; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500;">
+                    <i class="fa-solid fa-plus"></i> Publicar Prenda
+                </button>
+
                 <div class="user-nav" style="display: flex; align-items: center; gap: 10px;">
                     <span id="userName" style="font-size: 0.9rem; font-weight: 500;"></span>
                     <button class="action-btn" id="authBtn" title="Cuenta">
@@ -93,6 +97,33 @@
                 </div>
                 <button class="checkout-btn" id="btnConfirmarReserva" onclick="confirmarReserva()">Confirmar Reserva</button>
             </div>
+        </aside>
+    </div>
+
+    <!-- Modal Formulario Publicar Prenda -->
+    <div class="cart-overlay" id="modalPublicarOverlay">
+        <aside class="cart-modal" style="max-width: 450px; padding: 25px;">
+            <div class="cart-header">
+                <h3><i class="fa-solid fa-shirt"></i> Publicar Prenda para Venta</h3>
+                <button class="close-cart-btn" onclick="cerrarModalPublicar()">&times;</button>
+            </div>
+            
+            <form id="formPostularPrenda" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                <input type="text" id="postNombre" placeholder="Nombre de la prenda" required style="padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <input type="text" id="postMarca" placeholder="Marca" required style="padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <select id="postTalla" required style="padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                    <option value="" disabled selected>Selecciona Talla</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                </select>
+                <input type="number" id="postPrecio" placeholder="Precio ($COP)" required style="padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <input type="url" id="postImagen" placeholder="URL de la Imagen" required style="padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                
+                <button type="submit" class="checkout-btn" style="margin-top: 10px;">Enviar a Revisión</button>
+            </form>
         </aside>
     </div>
 

@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSearchFilter();
     setupCartModal();
     setupCategoryFilters();
+    setupModalPublicar();
 });
 
 let prendasGlobales = [];
@@ -36,8 +37,6 @@ async function fetchPrendas() {
         }
     }
 }
-
-
 
 function setupCategoryFilters() {
     const chips = document.querySelectorAll('.chip');
@@ -119,7 +118,6 @@ function renderProducts(prendas) {
         
         const imagenUrl = prenda.imagen_url || prenda.imagen || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80';
         
-        // Evaluar si la prenda ya fue reservada
         const estaReservado = estado === 'reservado';
 
         return `
@@ -211,7 +209,6 @@ function updateCartUI() {
 }
 
 async function confirmarReserva() {
-    // 1. Validar que el usuario haya iniciado sesión
     const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
 
     if (!usuarioSesion) {
@@ -220,7 +217,6 @@ async function confirmarReserva() {
         return;
     }
 
-    // 2. Validar que el carrito no esté vacío
     if (carrito.length === 0) {
         alert('Tu carrito está vacío.');
         return;
@@ -258,7 +254,6 @@ async function confirmarReserva() {
             maximumFractionDigits: 0 
         }).format(val);
 
-        // Identificador Bre-B / Nequi de NMA Selección Textil
         const llaveNequi = "@NEQUINIC0664";
 
         alert(
@@ -273,13 +268,11 @@ async function confirmarReserva() {
             `Al presionar Aceptar, te redirigiremos a WhatsApp con los datos listos para enviar tu comprobante.`
         );
 
-        // Limpieza de interfaz y carrito
         carrito = [];
         updateCartUI();
         document.getElementById('cartOverlay').classList.remove('active');
         fetchPrendas();
 
-        // Redirección a WhatsApp con los datos de Nequi/Bre-B prellenados
         const numeroWhatsApp = "3123342385";
         const mensajeWhatsApp = encodeURIComponent(
             `Hola, acabo de realizar una reserva por ${formatearCOP(totalReserva)}.\n\n` +
@@ -293,6 +286,75 @@ async function confirmarReserva() {
         console.error('❌ Error en reserva:', error.message);
         alert('Ocurrió un error al guardar tu reserva.');
     }
+}
+
+// ==========================================
+// LÓGICA DE POSTULACIÓN DE PRENDAS (USUARIO)
+// ==========================================
+
+function setupModalPublicar() {
+    const formPostular = document.getElementById('formPostularPrenda');
+    if (!formPostular) return;
+
+    formPostular.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
+        if (!usuarioSesion) {
+            alert('Debes iniciar sesión para publicar prendas.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const payload = {
+            nombre_prenda: document.getElementById('postNombre').value,
+            marca: document.getElementById('postMarca').value,
+            talla: document.getElementById('postTalla').value,
+            precio: Number(document.getElementById('postPrecio').value),
+            imagen_url: document.getElementById('postImagen').value,
+            usuario_id: usuarioSesion.id || usuarioSesion.id_usuario
+        };
+
+        try {
+            const res = await fetch('http://localhost:5000/api/productos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error('Error al enviar la publicación.');
+
+            alert('¡Prenda enviada con éxito! El administrador revisará tu publicación antes de ponerla a la venta.');
+            cerrarModalPublicar();
+            formPostular.reset();
+        } catch (err) {
+            console.error('❌ Error:', err.message);
+            alert('No se pudo enviar la prenda a revisión.');
+        }
+    });
+
+    const overlay = document.getElementById('modalPublicarOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cerrarModalPublicar();
+        });
+    }
+}
+
+function abrirModalPublicar() {
+    const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
+    if (!usuarioSesion) {
+        alert('Debes iniciar sesión para publicar prendas.');
+        window.location.href = 'login.html';
+        return;
+    }
+    const modal = document.getElementById('modalPublicarOverlay');
+    if (modal) modal.classList.add('active');
+}
+
+function cerrarModalPublicar() {
+    const modal = document.getElementById('modalPublicarOverlay');
+    if (modal) modal.classList.remove('active');
 }
 
 function escapeHTML(str) {
