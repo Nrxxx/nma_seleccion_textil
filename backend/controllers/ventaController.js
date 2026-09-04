@@ -11,7 +11,7 @@ export const obtenerVentas = async (req, res) => {
   }
 };
 
-// Crear/Registrar una nueva venta con abono del 50%
+// Registrar una nueva venta con abono del 50%
 export const registrarVenta = async (req, res) => {
   try {
     const { usuario_id, total, detalles } = req.body;
@@ -24,7 +24,7 @@ export const registrarVenta = async (req, res) => {
     const montoPendiente = total / 2;
     const fechaExpiracion = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    // 1. Insertar la venta en 'ventas'
+    // Insertar la venta en la tabla de 'ventas'
     const { data: venta, error: errorVenta } = await supabase
       .from('ventas')
       .insert([
