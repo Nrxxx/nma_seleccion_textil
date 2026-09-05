@@ -47,7 +47,8 @@ function setupCategoryFilters() {
             chips.forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
             
-            categoriaActiva = chip.getAttribute('data-category');
+            // Si no encuentra data-category, toma el texto visible del botón:
+            categoriaActiva = chip.getAttribute('data-category') || chip.textContent.trim();
             aplicarFiltrosCombinados();
         });
     });
@@ -66,13 +67,39 @@ function aplicarFiltrosCombinados() {
     const searchInput = document.getElementById('searchInput');
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-    const prendasFiltradas = prendasGlobales.filter(prenda => {
-        const nombre = (prenda.nombre_prenda || prenda.nombre || '').toLowerCase();
-        const marca = (prenda.marca || '').toLowerCase();
-        const talla = (prenda.talla || '').toLowerCase();
+    // Función auxiliar para quitar tildes
+    const normalizar = (texto) => (texto || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-        const coincideBusqueda = nombre.includes(query) || marca.includes(query) || talla.includes(query);
-        const coincideCategoria = (categoriaActiva === 'todas') || nombre.includes(categoriaActiva);
+    const cat = normalizar(categoriaActiva);
+    const queryNorm = normalizar(query);
+
+    const prendasFiltradas = prendasGlobales.filter(prenda => {
+        const nombre = normalizar(prenda.nombre_prenda || prenda.nombre);
+        const marca = normalizar(prenda.marca);
+        const talla = normalizar(prenda.talla);
+
+        // 1. Buscador de texto libre
+        const coincideBusqueda = queryNorm === '' || 
+            nombre.includes(queryNorm) || 
+            marca.includes(queryNorm) || 
+            talla.includes(queryNorm);
+
+        // 2. Filtro por categoría
+        let coincideCategoria = false;
+
+        if (cat === 'todas' || cat === '') {
+            coincideCategoria = true;
+        } else if (cat.includes('pantalon') || cat.includes('jean')) {
+            coincideCategoria = nombre.includes('pantalon') || nombre.includes('pantalones') || nombre.includes('jean');
+        } else if (cat.includes('chaqueta')) {
+            coincideCategoria = nombre.includes('chaqueta') || nombre.includes('abrigo');
+        } else if (cat.includes('camisa')) {
+            coincideCategoria = nombre.includes('camisa') || nombre.includes('camiseta');
+        } else if (cat.includes('buzo') || cat.includes('buco')) {
+            coincideCategoria = nombre.includes('buzo') || nombre.includes('buco') || nombre.includes('hoodie');
+        } else {
+            coincideCategoria = nombre.includes(cat);
+        }
 
         return coincideBusqueda && coincideCategoria;
     });
@@ -258,7 +285,7 @@ async function confirmarReserva() {
             maximumFractionDigits: 0 
         }).format(val);
 
-        // Identificador Bre-B / Nequi de NMA Selección Textil
+        // Identificador Bre-B - Nequi de NMA Selección Textil
         const llaveNequi = "@NEQUINIC0664";
 
         alert(
