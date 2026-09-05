@@ -24,7 +24,7 @@
         .btn-add:hover { background: #333; }
         .btn-back { background: transparent; border: 1px solid #111; padding: 8px 14px; border-radius: 6px; text-decoration: none; color: #111; font-weight: 500; }
         
-        /* Estilos específicos para la gestión de abonos */
+        /* Estilos específicos para la gestión de abonos y solicitudes */
         .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block; text-transform: uppercase; }
         .badge-pendiente { background: #fef3c7; color: #92400e; }
         .badge-abonado { background: #d1fae5; color: #065f46; }
@@ -47,7 +47,35 @@
     </header>
 
     <main class="admin-container">
-        <!-- SECCIÓN 1: Gestión de Abonos y Reservas -->
+        <!-- SECCIÓN 1: Solicitudes de Publicación de Usuarios -->
+        <section class="admin-section">
+            <div class="admin-header">
+                <div>
+                    <h2><i class="fa-solid fa-clipboard-check"></i> Solicitudes de Publicación de Usuarios</h2>
+                    <p style="color: #666; font-size: 0.9rem;">Aprueba o rechaza prendas enviadas por los usuarios antes de que aparezcan en la tienda.</p>
+                </div>
+            </div>
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Talla</th>
+                        <th>Marca</th>
+                        <th>Precio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaSolicitudesBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #666;">Cargando solicitudes pendientes...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SECCIÓN 2: Gestión de Abonos y Reservas -->
         <section class="admin-section">
             <div class="admin-header">
                 <div>
@@ -75,7 +103,7 @@
             </table>
         </section>
 
-        <!-- SECCIÓN 2: Gestión de Inventario -->
+        <!-- SECCIÓN 3: Gestión de Inventario General -->
         <section class="admin-section">
             <div class="admin-header">
                 <div>
