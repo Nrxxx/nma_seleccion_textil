@@ -100,6 +100,26 @@ body {
     border-radius: 8px;
 }
 
+/* Botón Vender Prenda */
+.btn-vender {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+    transition: background 0.2s ease;
+}
+
+.btn-vender:hover {
+    background-color: #059669;
+}
+
 .cart-btn {
     position: relative;
     background-color: var(--primary-color);
@@ -138,15 +158,6 @@ body {
     color: #010101;
 }
 
-/* .season-badge {
-    background: #fff;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #2e7d32;
-} */
-
 .carousel-arrow {
     background: #ffffff99;
     border: none;
@@ -182,11 +193,11 @@ body {
     margin-bottom: 25px;
     overflow-x: auto;
     padding-bottom: 8px;
-    scrollbar-width: none; /* Oculta scrollbar en Firefox */
+    scrollbar-width: none;
 }
 
 .filter-chips::-webkit-scrollbar {
-    display: none; /* Oculta scrollbar en Chrome/Safari */
+    display: none;
 }
 
 .chip {
@@ -227,6 +238,7 @@ body {
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    cursor: pointer;
 }
 
 .product-card:hover {
@@ -236,7 +248,7 @@ body {
 
 .product-image-container {
     width: 100%;
-    height: 220px;
+    height: 280px;
     background-color: #f0f0f0;
     overflow: hidden;
     display: flex;
@@ -247,12 +259,13 @@ body {
 .product-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ajusta la foto sin deformarla */
+    object-fit: cover;
     transition: transform 0.3s ease;
+    display: block;
 }
 
 .product-card:hover .product-img {
-    transform: scale(1.05); /* Efecto zoom suave al pasar el mouse */
+    transform: scale(1.05);
 }
 
 .product-info {
@@ -419,14 +432,177 @@ body {
     cursor: pointer;
 }
 
-/* responsive adjustments */
+/* ==========================================
+   ESTILOS DE MODALES GENERALES & VISTA RÁPIDA
+   ========================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-group-row > div {
+    flex: 1;
+}
+
+.form-group label, .form-group-row label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.form-group input, .form-group textarea, .form-group-row input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.btn-submit:hover {
+    background: #333;
+}
+
+/* Modal Vista Rápida & Carrusel */
+.modal-quickview {
+    max-width: 750px;
+}
+
+.quickview-body {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.carousel-container {
+    position: relative;
+    width: 320px;
+    height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.carousel-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+.carousel-arrow-modal {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 1.2rem;
+}
+
+#prevPhotoBtn { left: 10px; }
+#nextPhotoBtn { right: 10px; }
+
+.carousel-counter {
+    position: absolute;
+    bottom: 8px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.quickview-details {
+    flex: 1;
+}
+
+.quickview-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 8px 0;
+}
+
+.quickview-price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 15px 0;
+    color: var(--primary-color);
+}
 
 /* ==========================================
    MEDIA QUERIES - RESPONSIVE DESIGN (MOBILE)
    ========================================== */
 
 @media (max-width: 768px) {
-    /* Reorganizar el header en 2 filas */
     .header-container {
         flex-wrap: wrap;
         padding: 10px 15px;
@@ -441,7 +617,6 @@ body {
         font-size: 0.9rem;
     }
 
-    /* La barra de búsqueda pasa a ocupar toda la segunda fila */
     .search-bar {
         order: 3;
         max-width: 100%;
@@ -454,7 +629,6 @@ body {
         font-size: 0.85rem;
     }
 
-    /* Los botones de acción se alinean a la derecha en la primera fila */
     .header-actions {
         order: 2;
         gap: 8px;
@@ -465,7 +639,14 @@ body {
         font-size: 0.85rem;
     }
 
-    /* Ocultar texto del botón 'Usuario' en pantallas muy pequeñas para ahorrar espacio */
+    .btn-vender span {
+        display: none;
+    }
+
+    .btn-vender {
+        padding: 8px;
+    }
+
     .action-btn:not(.cart-btn) {
         font-size: 0;
         padding: 8px;
@@ -475,7 +656,6 @@ body {
         font-size: 1.1rem;
     }
 
-    /* Reducir tamaño del banner */
     .hero-banner {
         padding: 25px 10px;
         margin: 15px 10px 25px;
@@ -494,14 +674,13 @@ body {
         height: 32px;
     }
 
-    /* Reajustar la cuadrícula de productos para celulares */
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 15px;
     }
 
     .product-image-container {
-        height: 140px;
+        height: 180px;
     }
 
     .product-title {
@@ -521,8 +700,16 @@ body {
         font-size: 0.8rem;
     }
 
-    /* Ajustar el modal del carrito para celulares */
     .cart-modal {
         max-width: 100%;
+    }
+
+    .quickview-body {
+        flex-direction: column;
+    }
+
+    .carousel-container {
+        width: 100%;
+        height: 250px;
     }
 }

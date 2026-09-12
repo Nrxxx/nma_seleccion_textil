@@ -8,17 +8,17 @@ export const iniciarCronJobs = () => {
     try {
       const ahora = new Date().toISOString();
 
-      // 1. Obtener prendas cuya fecha limite haya pasado
+      // 1. Obtener prendas cuya fecha limite haya pasado (usando únicamente la columna 'id')
       const { data: prendasExpiradas, error: errProductos } = await supabase
         .from('productos')
-        .select('id_prenda, id')
+        .select('id')
         .eq('estado', 'reservado')
         .lt('reservado_hasta', ahora);
 
       if (errProductos) throw errProductos;
 
       if (prendasExpiradas && prendasExpiradas.length > 0) {
-        const ids = prendasExpiradas.map(p => p.id_prenda || p.id);
+        const ids = prendasExpiradas.map(p => p.id);
 
         // 2. Cambiar estado de las prendas a disponible
         await supabase

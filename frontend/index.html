@@ -32,6 +32,12 @@
             <div class="header-actions">
                 <div class="user-nav" style="display: flex; align-items: center; gap: 10px;">
                     <span id="userName" style="font-size: 0.9rem; font-weight: 500;"></span>
+                    
+                    <!-- Botón para Vender Prenda -->
+                    <button id="openVenderModalBtn" class="btn-vender">
+                        <i class="fa-solid fa-plus"></i> <span>Vender mi prenda</span>
+                    </button>
+
                     <button class="action-btn" id="authBtn" title="Cuenta">
                         <i class="fa-regular fa-user"></i> <span id="authText">Iniciar Sesión</span>
                     </button>
@@ -94,6 +100,82 @@
                 <button class="checkout-btn" id="btnConfirmarReserva" onclick="confirmarReserva()">Confirmar Reserva</button>
             </div>
         </aside>
+    </div>
+
+    <!-- MODAL: VENDER / SUBIR PRENDA -->
+    <div id="solicitudModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-shirt"></i> Vender mi Prenda</h2>
+                <button id="closeSolicitudModalBtn" class="close-modal">&times;</button>
+            </div>
+            <form id="solicitudForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Nombre de la prenda</label>
+                    <input type="text" id="solicitudNombre" required placeholder="Ej: Chaqueta Vintage Nike">
+                </div>
+                <div class="form-group-row">
+                    <div>
+                        <label>Talla</label>
+                        <input type="text" id="solicitudTalla" required placeholder="Ej: M">
+                    </div>
+                    <div>
+                        <label>Marca</label>
+                        <input type="text" id="solicitudMarca" required placeholder="Ej: Nike">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Precio Estimado ($ COP)</label>
+                    <input type="number" id="solicitudPrecio" required placeholder="80000">
+                </div>
+                
+                <!-- CAMBIO A INPUT FILE DE FOTOS (JPG, PNG, JPEG) -->
+                <div class="form-group">
+                    <label>Fotos de la prenda (Mínimo 1, Máximo 3 imágenes)</label>
+                    <div class="file-inputs-container" style="display: flex; flex-direction: column; gap: 8px;">
+                        <div>
+                            <span style="font-size: 0.85rem; color: #666;">Foto 1 (Principal)*:</span>
+                            <input type="file" class="solicitudFotoInput" accept="image/png, image/jpeg, image/jpg" required>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.85rem; color: #666;">Foto 2 (Opcional):</span>
+                            <input type="file" class="solicitudFotoInput" accept="image/png, image/jpeg, image/jpg">
+                        </div>
+                        <div>
+                            <span style="font-size: 0.85rem; color: #666;">Foto 3 (Opcional):</span>
+                            <input type="file" class="solicitudFotoInput" accept="image/png, image/jpeg, image/jpg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción / Estado de la prenda</label>
+                    <textarea id="solicitudDescripcion" rows="3" placeholder="Estado 9/10, sin detalles..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Enviar a Revisión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: VISTA RÁPIDA / CARRUSEL -->
+    <div id="quickViewModal" class="modal-overlay">
+        <div class="modal-content modal-quickview">
+            <button id="closeQuickViewBtn" class="close-modal">&times;</button>
+            <div class="quickview-body">
+                <div class="carousel-container">
+                    <button id="prevPhotoBtn" class="carousel-arrow-modal">&lang;</button>
+                    <img id="quickViewImg" src="" alt="Prenda">
+                    <button id="nextPhotoBtn" class="carousel-arrow-modal">&rang;</button>
+                    <span id="quickViewCounter" class="carousel-counter">1 / 1</span>
+                </div>
+                <div class="quickview-details">
+                    <h2 id="quickViewTitle"></h2>
+                    <p class="quickview-meta">Talla: <span id="quickViewTalla"></span> | Marca: <span id="quickViewMarca"></span></p>
+                    <div id="quickViewPrecio" class="quickview-price"></div>
+                    <button id="quickViewAddCartBtn" class="add-cart-btn">Reservar Prenda</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Cargar Scripts -->

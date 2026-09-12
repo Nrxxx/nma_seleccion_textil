@@ -1,329 +1,243 @@
+const API_URL = 'http://localhost:5000/api/productos';
+const API_VENTAS = 'http://localhost:5000/api/ventas';
+const API_SOLICITUDES = 'http://localhost:5000/api/solicitudes';
+
+let prendas = [];
+let currentFotosModal = [];
+let currentFotoIndex = 0;
+
 document.addEventListener('DOMContentLoaded', () => {
-    fetchPrendas();
-    setupSearchFilter();
-    setupCartModal();
-    setupCategoryFilters();
+    cargarProductosCliente();
+    setupSolicitudModalEvents();
+    setupQuickViewEvents();
 });
 
-let prendasGlobales = [];
-let carrito = [];
-let categoriaActiva = 'todas';
+// ==========================================
+// Cargar Productos en Catálogo Cliente
+// ==========================================
+async function cargarProductosCliente() {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
 
-async function fetchPrendas() {
     try {
-        const response = await fetch('http://localhost:5000/api/productos');
-        if (!response.ok) throw new Error('No se pudo conectar con el servidor backend');
-        
-        const prendas = await response.json();
-        
-        console.log('✅ Datos cargados desde el servidor:');
-        console.table(prendas);
-
-        prendasGlobales = prendas;
-        aplicarFiltrosCombinados();
-    } catch (error) {
-        console.error('❌ Error al obtener las prendas:', error.message);
-        
-        const productsGrid = document.getElementById('productsGrid');
-        if (productsGrid) {
-            productsGrid.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #d9534f;">
-                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
-                    <p><strong>Error de conexión con el servidor.</strong></p>
-                    <p style="font-size: 0.9rem; color: #666;">Asegúrate de que tu backend esté encendido y conectado a Supabase.</p>
-                </div>
-            `;
-        }
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error('Error al obtener productos');
+        prendas = await res.json();
+        renderProductos(prendas);
+    } catch (err) {
+        console.error('❌ Error al cargar productos:', err.message);
+        grid.innerHTML = '<p class="error-msg">No se pudieron cargar las prendas del catálogo.</p>';
     }
 }
 
+function renderProductos(lista) {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
 
-
-function setupCategoryFilters() {
-    const chips = document.querySelectorAll('.chip');
-    
-    chips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            chips.forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            
-            // Si no encuentra data-category, toma el texto visible del botón:
-            categoriaActiva = chip.getAttribute('data-category') || chip.textContent.trim();
-            aplicarFiltrosCombinados();
-        });
-    });
-}
-
-function setupSearchFilter() {
-    const searchInput = document.getElementById('searchInput');
-    if (!searchInput) return;
-
-    searchInput.addEventListener('input', () => {
-        aplicarFiltrosCombinados();
-    });
-}
-
-function aplicarFiltrosCombinados() {
-    const searchInput = document.getElementById('searchInput');
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-    // Función auxiliar para quitar tildes
-    const normalizar = (texto) => (texto || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-
-    const cat = normalizar(categoriaActiva);
-    const queryNorm = normalizar(query);
-
-    const prendasFiltradas = prendasGlobales.filter(prenda => {
-        const nombre = normalizar(prenda.nombre_prenda || prenda.nombre);
-        const marca = normalizar(prenda.marca);
-        const talla = normalizar(prenda.talla);
-
-        // 1. Buscador de texto libre
-        const coincideBusqueda = queryNorm === '' || 
-            nombre.includes(queryNorm) || 
-            marca.includes(queryNorm) || 
-            talla.includes(queryNorm);
-
-        // 2. Filtro por categoría
-        let coincideCategoria = false;
-
-        if (cat === 'todas' || cat === '') {
-            coincideCategoria = true;
-        } else if (cat.includes('pantalon') || cat.includes('jean')) {
-            coincideCategoria = nombre.includes('pantalon') || nombre.includes('pantalones') || nombre.includes('jean');
-        } else if (cat.includes('chaqueta')) {
-            coincideCategoria = nombre.includes('chaqueta') || nombre.includes('abrigo');
-        } else if (cat.includes('camisa')) {
-            coincideCategoria = nombre.includes('camisa') || nombre.includes('camiseta');
-        } else if (cat.includes('buzo') || cat.includes('buco')) {
-            coincideCategoria = nombre.includes('buzo') || nombre.includes('buco') || nombre.includes('hoodie');
-        } else {
-            coincideCategoria = nombre.includes(cat);
-        }
-
-        return coincideBusqueda && coincideCategoria;
-    });
-
-    renderProducts(prendasFiltradas);
-}
-
-function setupCartModal() {
-    const cartBtn = document.querySelector('.cart-btn');
-    const closeCartBtn = document.getElementById('closeCartBtn');
-    const cartOverlay = document.getElementById('cartOverlay');
-
-    if (cartBtn && cartOverlay && closeCartBtn) {
-        cartBtn.addEventListener('click', () => cartOverlay.classList.add('active'));
-        closeCartBtn.addEventListener('click', () => cartOverlay.classList.remove('active'));
-        
-        cartOverlay.addEventListener('click', (e) => {
-            if (e.target === cartOverlay) cartOverlay.classList.remove('active');
-        });
-    }
-}
-
-function renderProducts(prendas) {
-    const productsGrid = document.getElementById('productsGrid');
-    if (!productsGrid) return;
-
-    if (!prendas || prendas.length === 0) {
-        productsGrid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
-                <i class="fa-solid fa-filter-circle-xmark" style="font-size: 2.5rem; margin-bottom: 10px; color: #999;"></i>
-                <p><strong>No hay prendas disponibles para este filtro.</strong></p>
-            </div>
-        `;
+    if (!lista || lista.length === 0) {
+        grid.innerHTML = '<p>No hay prendas disponibles en este momento.</p>';
         return;
     }
 
-    productsGrid.innerHTML = prendas.map(prenda => {
-        const nombre = prenda.nombre_prenda || prenda.nombre || 'Prenda sin nombre';
-        const talla = prenda.talla || 'Única';
-        const marca = prenda.marca || 'N/A';
-        const precio = prenda.precio ? Number(prenda.precio).toLocaleString('es-CO') : '0';
-        const id = prenda.id_prenda || prenda.id;
-        const estado = (prenda.estado || 'disponible').toLowerCase();
+    grid.innerHTML = lista.map(p => {
+        const id = p.id_prenda || p.id;
+        const nombre = p.nombre_prenda || p.nombre;
         
-        const imagenUrl = prenda.imagen_url || prenda.imagen || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80';
-        
-        // Evaluar si la prenda ya fue reservada
-        const estaReservado = estado === 'reservado';
+        // Obtener la primera imagen disponible
+        let imagen = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80';
+        if (p.fotos && Array.isArray(p.fotos) && p.fotos.length > 0) {
+            imagen = p.fotos[0];
+        } else if (p.imagen_url || p.imagen) {
+            imagen = p.imagen_url || p.imagen;
+        }
+
+        const precio = Number(p.precio || p.precio_estimado || 0).toLocaleString('es-CO');
 
         return `
-            <article class="product-card" style="${estaReservado ? 'opacity: 0.75;' : ''}">
-                <div class="product-image-container" style="position: relative;">
-                    <img src="${escapeHTML(imagenUrl)}" alt="${escapeHTML(nombre)}" class="product-img" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80';">
-                    ${estaReservado ? `
-                        <span style="position: absolute; top: 10px; right: 10px; background: #e53e3e; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-                            Reservado
-                        </span>
-                    ` : ''}
+            <div class="product-card" onclick="abrirVistaRapida(${id})">
+                <div class="product-image-container">
+                    <img src="${escapeHTML(imagen)}" alt="${escapeHTML(nombre)}" class="product-img">
                 </div>
                 <div class="product-info">
                     <h3 class="product-title">${escapeHTML(nombre)}</h3>
-                    <p class="product-meta">
-                        Talla: ${escapeHTML(talla)} | Marca: ${escapeHTML(marca)}
-                    </p>
-                    <div class="product-price">$${precio} COP</div>
-                    
-                    ${estaReservado ? `
-                        <button class="add-cart-btn" disabled style="background: #cbd5e0; cursor: not-allowed; color: #4a5568;">
-                            Agotado / Reservado
-                        </button>
-                    ` : `
-                        <button class="add-cart-btn" onclick="addToCart(${id})">
-                            Reservar Prenda
-                        </button>
-                    `}
+                    <p class="product-meta">Talla: ${escapeHTML(p.talla || 'Única')} | Marca: ${escapeHTML(p.marca || 'N/A')}</p>
+                    <p class="product-price">$${precio} COP</p>
                 </div>
-            </article>
-        `;
-    }).join('');
-}
-
-function addToCart(id) {
-    const prendaEncontrada = prendasGlobales.find(p => (p.id_prenda || p.id) === id);
-    if (!prendaEncontrada) return;
-
-    const yaExiste = carrito.some(item => (item.id_prenda || item.id) === id);
-    if (yaExiste) {
-        alert('Esta prenda es única y ya la tienes agregada en tu carrito.');
-        return;
-    }
-
-    carrito.push(prendaEncontrada);
-    updateCartUI();
-    document.getElementById('cartOverlay').classList.add('active');
-}
-
-function removeFromCart(id) {
-    carrito = carrito.filter(item => (item.id_prenda || item.id) !== id);
-    updateCartUI();
-}
-
-function updateCartUI() {
-    const cartCount = document.getElementById('cartCount');
-    const cartBody = document.getElementById('cartBody');
-    const cartTotal = document.getElementById('cartTotal');
-
-    if (!cartCount || !cartBody || !cartTotal) return;
-
-    cartCount.textContent = carrito.length;
-
-    if (carrito.length === 0) {
-        cartBody.innerHTML = '<p class="empty-cart-msg">Aún no has agregado prendas al carrito.</p>';
-        cartTotal.textContent = '$0 COP';
-        return;
-    }
-
-    let total = 0;
-    cartBody.innerHTML = carrito.map(item => {
-        const nombre = item.nombre_prenda || item.nombre;
-        const precio = Number(item.precio || 0);
-        const id = item.id_prenda || item.id;
-        total += precio;
-
-        return `
-            <div class="cart-item">
-                <div class="cart-item-info">
-                    <h4>${escapeHTML(nombre)}</h4>
-                    <p>Talla: ${escapeHTML(item.talla)} | $${precio.toLocaleString('es-CO')} COP</p>
-                </div>
-                <button class="remove-item-btn" onclick="removeFromCart(${id})" title="Eliminar">&times;</button>
             </div>
         `;
     }).join('');
-
-    cartTotal.textContent = `$${total.toLocaleString('es-CO')} COP`;
 }
 
-async function confirmarReserva() {
-    // 1. Validar que el usuario haya iniciado sesión
+// ==========================================
+// Modal Vista Rápida & Carrusel
+// ==========================================
+function setupQuickViewEvents() {
+    const closeBtn = document.getElementById('closeQuickViewBtn');
+    const modal = document.getElementById('quickViewModal');
+    const prevBtn = document.getElementById('prevPhotoBtn');
+    const nextBtn = document.getElementById('nextPhotoBtn');
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            if (modal) modal.classList.remove('active');
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentFotosModal.length === 0) return;
+            currentFotoIndex = (currentFotoIndex - 1 + currentFotosModal.length) % currentFotosModal.length;
+            actualizarImagenModal();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentFotosModal.length === 0) return;
+            currentFotoIndex = (currentFotoIndex + 1) % currentFotosModal.length;
+            actualizarImagenModal();
+        });
+    }
+}
+
+function abrirVistaRapida(id) {
+    const prenda = prendas.find(p => (p.id_prenda || p.id) === id);
+    if (!prenda) return;
+
+    // Extraer array de fotos o foto única
+    if (prenda.fotos && Array.isArray(prenda.fotos) && prenda.fotos.length > 0) {
+        currentFotosModal = prenda.fotos;
+    } else if (prenda.imagen_url || prenda.imagen) {
+        currentFotosModal = [prenda.imagen_url || prenda.imagen];
+    } else {
+        currentFotosModal = ['https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80'];
+    }
+
+    currentFotoIndex = 0;
+    actualizarImagenModal();
+
+    const titleEl = document.getElementById('quickViewTitle');
+    const tallaEl = document.getElementById('quickViewTalla');
+    const marcaEl = document.getElementById('quickViewMarca');
+    const precioEl = document.getElementById('quickViewPrecio');
+    const modal = document.getElementById('quickViewModal');
+
+    if (titleEl) titleEl.textContent = prenda.nombre_prenda || prenda.nombre || '';
+    if (tallaEl) tallaEl.textContent = prenda.talla || 'Única';
+    if (marcaEl) marcaEl.textContent = prenda.marca || 'N/A';
+    
+    const precio = Number(prenda.precio || prenda.precio_estimado || 0).toLocaleString('es-CO');
+    if (precioEl) precioEl.textContent = `$${precio} COP`;
+
+    if (modal) modal.classList.add('active');
+}
+
+function actualizarImagenModal() {
+    const imgEl = document.getElementById('quickViewImg');
+    const counterEl = document.getElementById('quickViewCounter');
+
+    if (imgEl && currentFotosModal.length > 0) {
+        imgEl.src = currentFotosModal[currentFotoIndex];
+    }
+    if (counterEl) {
+        counterEl.textContent = `${currentFotoIndex + 1} / ${currentFotosModal.length}`;
+    }
+}
+
+// ==========================================
+// Configuración Modal Vender / Subir Prenda
+// ==========================================
+function setupSolicitudModalEvents() {
+    const openBtn = document.getElementById('openVenderModalBtn');
+    const closeBtn = document.getElementById('closeSolicitudModalBtn');
+    const overlay = document.getElementById('solicitudModalOverlay');
+    const form = document.getElementById('solicitudForm');
+
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
+            if (!usuarioSesion) {
+                alert('Debes iniciar sesión para vender o publicar una prenda.');
+                window.location.href = 'login.html';
+                return;
+            }
+            overlay.classList.add('active');
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.classList.remove('active');
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', enviarSolicitudPrenda);
+    }
+}
+
+async function enviarSolicitudPrenda(e) {
+    e.preventDefault();
+
     const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
-
-    if (!usuarioSesion) {
-        alert('Debes iniciar sesión para poder reservar una prenda.');
-        window.location.href = 'login.html';
-        return;
+    const photoInputs = document.querySelectorAll('.solicitudFotoInput');
+    
+    const formData = new FormData();
+    formData.append('nombre_prenda', document.getElementById('solicitudNombre').value);
+    formData.append('talla', document.getElementById('solicitudTalla').value);
+    formData.append('marca', document.getElementById('solicitudMarca').value);
+    formData.append('precio_estimado', document.getElementById('solicitudPrecio').value);
+    formData.append('descripcion', document.getElementById('solicitudDescripcion').value);
+    
+    if (usuarioSesion && usuarioSesion.id) {
+        formData.append('usuario_id', usuarioSesion.id);
     }
 
-    // 2. Validar que el carrito no esté vacío
-    if (carrito.length === 0) {
-        alert('Tu carrito está vacío.');
+    // Recorrer los 3 inputs e incluir los archivos seleccionados
+    let fotosCount = 0;
+    photoInputs.forEach(input => {
+        if (input.files && input.files[0]) {
+            formData.append('fotos', input.files[0]);
+            fotosCount++;
+        }
+    });
+
+    if (fotosCount === 0) {
+        alert('Por favor adjunta al menos la Foto 1 principal.');
         return;
     }
-
-    const totalReserva = carrito.reduce((sum, item) => sum + Number(item.precio || 0), 0);
-    const abono50 = totalReserva / 2;
-
-    const detallesVenta = carrito.map(item => ({
-        id_prenda: item.id_prenda || item.id,
-        nombre_prenda: item.nombre_prenda || item.nombre,
-        precio: item.precio,
-        talla: item.talla,
-        marca: item.marca
-    }));
-
-    const payload = {
-        usuario_id: usuarioSesion.id || usuarioSesion.id_usuario,
-        total: totalReserva,
-        detalles: detallesVenta
-    };
 
     try {
-        const response = await fetch('http://localhost:5000/api/ventas', {
+        const res = await fetch(API_SOLICITUDES, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: formData
         });
 
-        if (!response.ok) throw new Error('No se pudo procesar la reserva en el servidor');
+        if (!res.ok) throw new Error('Error al registrar la solicitud');
 
-        const formatearCOP = (val) => new Intl.NumberFormat('es-CO', { 
-            style: 'currency', 
-            currency: 'COP', 
-            maximumFractionDigits: 0 
-        }).format(val);
-
-        // Identificador Bre-B - Nequi de NMA Selección Textil
-        const llaveNequi = "@NEQUINIC0664";
-
-        alert(
-            `¡RESERVA REGISTRADA CON ÉXITO!\n\n` +
-            `===================================\n` +
-            `💵 Total Compra: ${formatearCOP(totalReserva)}\n` +
-            `💰 ABONO REQUERIDO (50%): ${formatearCOP(abono50)}\n` +
-            `===================================\n\n` +
-            `🔑 Llave / Usuario Nequi: ${llaveNequi}\n` +
-            `🏢 Comercio: NMA Selección Textil\n\n` +
-            `⏳ Tienes 24 horas para transferir el abono de ${formatearCOP(abono50)}.\n` +
-            `Al presionar Aceptar, te redirigiremos a WhatsApp con los datos listos para enviar tu comprobante.`
-        );
-
-        // Limpieza de interfaz y carrito
-        carrito = [];
-        updateCartUI();
-        document.getElementById('cartOverlay').classList.remove('active');
-        fetchPrendas();
-
-        // Redirección a WhatsApp con los datos de Nequi/Bre-B prellenados
-        const numeroWhatsApp = "3123342385";
-        const mensajeWhatsApp = encodeURIComponent(
-            `Hola, acabo de realizar una reserva por ${formatearCOP(totalReserva)}.\n\n` +
-            `Abonaré el 50% (${formatearCOP(abono50)}) a la llave Nequi/Bre-B: ${llaveNequi}\n\n` +
-            `Adjunto mi comprobante de pago:`
-        );
-
-        window.location.href = `https://wa.me/57${numeroWhatsApp}?text=${mensajeWhatsApp}`;
-
-    } catch (error) {
-        console.error('❌ Error en reserva:', error.message);
-        alert('Ocurrió un error al guardar tu reserva.');
+        alert('¡Solicitud enviada exitosamente! Tu prenda pasará por revisión antes de publicarse.');
+        document.getElementById('solicitudForm').reset();
+        document.getElementById('solicitudModalOverlay').classList.remove('active');
+    } catch (err) {
+        console.error('❌ Error al enviar la prenda:', err.message);
+        alert('Ocurrió un error al intentar enviar la solicitud.');
     }
 }
 
 function escapeHTML(str) {
-    return String(str)
+    return String(str || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
