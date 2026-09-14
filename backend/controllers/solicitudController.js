@@ -56,7 +56,6 @@ export const obtenerSolicitudesPendientes = async (req, res) => {
 };
 
 // 3. Aprobar solicitud y publicar en el catálogo con todas sus fotos
-// 3. Aprobar solicitud y publicar en el catálogo
 export const aprobarSolicitud = async (req, res) => {
   try {
     const { id } = req.params;
@@ -83,7 +82,8 @@ export const aprobarSolicitud = async (req, res) => {
         precio: solicitud.precio_estimado,
         fotos: fotosArray,
         imagen_url: primerFoto,
-        estado: 'disponible'
+        estado: 'disponible',
+        usuario_id: solicitud.usuario_id // Vinculamos la prenda al dueño
       }]);
 
     if (errInsert) {
@@ -103,6 +103,7 @@ export const aprobarSolicitud = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 // 4. Rechazar solicitud
 export const rechazarSolicitud = async (req, res) => {
   try {

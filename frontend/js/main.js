@@ -53,6 +53,10 @@ function renderProductos(lista) {
 
         const precio = Number(p.precio || p.precio_estimado || 0).toLocaleString('es-CO');
 
+        // Validar si el usuario viendo la página es el dueño de la prenda o el admin
+        const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
+        const esDuenioOAdmin = usuarioSesion && (usuarioSesion.id === p.usuario_id || usuarioSesion.rol === 'admin');
+
         return `
             <div class="product-card" onclick="abrirVistaRapida(${id})">
                 <div class="product-image-container">
@@ -62,6 +66,13 @@ function renderProductos(lista) {
                     <h3 class="product-title">${escapeHTML(nombre)}</h3>
                     <p class="product-meta">Talla: ${escapeHTML(p.talla || 'Única')} | Marca: ${escapeHTML(p.marca || 'N/A')}</p>
                     <p class="product-price">$${precio} COP</p>
+                    
+                    ${esDuenioOAdmin ? `
+                        <button style="margin-top: 10px; width: 100%; padding: 8px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #333;" 
+                                onclick="abrirEditarPrendaPropia(event, ${id})">
+                            ✏️ Editar Prenda
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -234,6 +245,63 @@ async function enviarSolicitudPrenda(e) {
         console.error('❌ Error al enviar la prenda:', err.message);
         alert('Ocurrió un error al intentar enviar la solicitud.');
     }
+}
+
+// ==========================================
+// EDICIÓN DE PRENDAS POR EL DUEÑO O ADMIN
+// ==========================================
+function abrirEditarPrendaPropia(event, id) {
+    event.stopPropagation(); // Evitar que se abra la vista rápida al hacer clic en editar
+
+    const prenda = prendas.find(p => (p.id_prenda || p.id) === id);
+    if (!prenda) return;
+    
+    document.getElementById('editPropiaId').value = id;
+    document.getElementById('editPropiaNombre').value = prenda.nombre_prenda || prenda.nombre || '';
+    document.getElementById('editPropiaTalla').value = prenda.talla || '';
+    document.getElementById('editPropiaMarca').value = prenda.marca || '';
+    document.getElementById('editPropiaPrecio').value = prenda.precio || prenda.precio_estimado || '';
+    
+    document.getElementById('modalEditarPropiaOverlay').classList.add('active');
+}
+
+const formEditarPropia = document.getElementById('formEditarPropia');
+if (formEditarPropia) {
+    formEditarPropia.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editPropiaId').value;
+        const formData = new FormData();
+        
+        formData.append('nombre_prenda', document.getElementById('editPropiaNombre').value);
+        formData.append('talla', document.getElementById('editPropiaTalla').value);
+        formData.append('marca', document.getElementById('editPropiaMarca').value);
+        formData.append('precio', document.getElementById('editPropiaPrecio').value);
+        
+        // Solo agregamos fotos si el usuario seleccionó nuevas
+        const photoInputs = document.querySelectorAll('.editPropiaFotoInput');
+        photoInputs.forEach(input => {
+            if (input.files && input.files[0]) {
+                formData.append('fotos', input.files[0]);
+            }
+        });
+        
+        try {
+            const res = await fetch(`${API_URL}/${id}`, {
+                method: 'PUT',
+                body: formData
+            });
+            
+            if (!res.ok) throw new Error('Error al actualizar');
+            
+            alert('¡Prenda actualizada correctamente!');
+            document.getElementById('modalEditarPropiaOverlay').classList.remove('active');
+            document.getElementById('formEditarPropia').reset();
+            cargarProductosCliente(); // Recargar el catálogo
+        } catch (err) {
+            console.error(err);
+            alert('Ocurrió un error al actualizar la prenda.');
+        }
+    });
 }
 
 function escapeHTML(str) {

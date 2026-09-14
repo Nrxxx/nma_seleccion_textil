@@ -53,11 +53,24 @@ export const actualizarProducto = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre_prenda, marca, talla, precio, fotos, imagen_url } = req.body;
-    const listaFotos = fotos || (imagen_url ? [imagen_url] : []);
+    
+    let updateData = { nombre_prenda, marca, talla, precio: Number(precio) };
+
+    // Si mandan fotos como texto (como lo hace el admin desde el panel)
+    if (fotos || imagen_url) {
+        updateData.fotos = fotos || (imagen_url ? [imagen_url] : []);
+    }
+
+    // Si suben archivos nuevos (desde el frontend por el usuario)
+    if (req.files && req.files.length > 0) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const fotosUrls = req.files.map(file => `${baseUrl}/uploads/${file.filename}`);
+        updateData.fotos = fotosUrls;
+    }
 
     const { data, error } = await supabase
       .from('productos')
-      .update({ nombre_prenda, marca, talla, precio: Number(precio), fotos: listaFotos })
+      .update(updateData)
       .eq('id', id)
       .select();
 
