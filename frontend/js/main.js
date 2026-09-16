@@ -5,11 +5,14 @@ const API_SOLICITUDES = 'http://localhost:5000/api/solicitudes';
 let prendas = [];
 let currentFotosModal = [];
 let currentFotoIndex = 0;
+let prendaSeleccionadaModal = null;
+let carrito = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarProductosCliente();
     setupSolicitudModalEvents();
     setupQuickViewEvents();
+    setupCarritoEvents();
 });
 
 // ==========================================
@@ -43,7 +46,6 @@ function renderProductos(lista) {
         const id = p.id_prenda || p.id;
         const nombre = p.nombre_prenda || p.nombre;
         
-        // Obtener la primera imagen disponible
         let imagen = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&q=80';
         if (p.fotos && Array.isArray(p.fotos) && p.fotos.length > 0) {
             imagen = p.fotos[0];
@@ -53,7 +55,6 @@ function renderProductos(lista) {
 
         const precio = Number(p.precio || p.precio_estimado || 0).toLocaleString('es-CO');
 
-        // Validar si el usuario viendo la página es el dueño de la prenda o el admin
         const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
         const esDuenioOAdmin = usuarioSesion && (usuarioSesion.id === p.usuario_id || usuarioSesion.rol === 'admin');
 
@@ -67,8 +68,12 @@ function renderProductos(lista) {
                     <p class="product-meta">Talla: ${escapeHTML(p.talla || 'Única')} | Marca: ${escapeHTML(p.marca || 'N/A')}</p>
                     <p class="product-price">$${precio} COP</p>
                     
+                    <button class="add-cart-btn" onclick="agregarAlCarrito(event, ${id})">
+                        <i class="fa-solid fa-cart-shopping"></i> Reservar
+                    </button>
+
                     ${esDuenioOAdmin ? `
-                        <button style="margin-top: 10px; width: 100%; padding: 8px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #333;" 
+                        <button style="margin-top: 8px; width: 100%; padding: 8px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #333;" 
                                 onclick="abrirEditarPrendaPropia(event, ${id})">
                             ✏️ Editar Prenda
                         </button>
@@ -80,6 +85,93 @@ function renderProductos(lista) {
 }
 
 // ==========================================
+// Lógica de Carrito / Reserva
+// ==========================================
+function setupCarritoEvents() {
+    const cartBtn = document.querySelector('.cart-btn');
+    const closeCartBtn = document.getElementById('closeCartBtn');
+    const cartOverlay = document.getElementById('cartOverlay');
+
+    if (cartBtn) {
+        cartBtn.addEventListener('click', () => {
+            if (cartOverlay) cartOverlay.classList.add('active');
+        });
+    }
+
+    if (closeCartBtn) {
+        closeCartBtn.addEventListener('click', () => {
+            if (cartOverlay) cartOverlay.classList.remove('active');
+        });
+    }
+
+    if (cartOverlay) {
+        cartOverlay.addEventListener('click', (e) => {
+            if (e.target === cartOverlay) cartOverlay.classList.remove('active');
+        });
+    }
+}
+
+function agregarAlCarrito(e, id) {
+    if (e) e.stopPropagation();
+
+    const prenda = prendas.find(p => (p.id_prenda || p.id) === id);
+    if (!prenda) return;
+
+    const yaExiste = carrito.some(item => (item.id_prenda || item.id) === id);
+    if (yaExiste) {
+        alert('Esta prenda ya está agregada a tu carrito de reservas.');
+        return;
+    }
+
+    carrito.push(prenda);
+    actualizarCarritoUI();
+
+    const cartOverlay = document.getElementById('cartOverlay');
+    if (cartOverlay) cartOverlay.classList.add('active');
+}
+
+function actualizarCarritoUI() {
+    const cartCount = document.getElementById('cartCount');
+    const cartBody = document.getElementById('cartBody');
+    const cartTotal = document.getElementById('cartTotal');
+
+    if (cartCount) cartCount.textContent = carrito.length;
+
+    if (!cartBody) return;
+
+    if (carrito.length === 0) {
+        cartBody.innerHTML = '<p class="empty-cart-msg">Aún no has agregado prendas al carrito.</p>';
+        if (cartTotal) cartTotal.textContent = '$0 COP';
+        return;
+    }
+
+    let total = 0;
+    cartBody.innerHTML = carrito.map((p, index) => {
+        const id = p.id_prenda || p.id;
+        const nombre = p.nombre_prenda || p.nombre;
+        const precioNum = Number(p.precio || p.precio_estimado || 0);
+        total += precioNum;
+
+        return `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <h4>${escapeHTML(nombre)}</h4>
+                    <p>Talla: ${escapeHTML(p.talla || 'Única')} | $${precioNum.toLocaleString('es-CO')} COP</p>
+                </div>
+                <button class="remove-item-btn" onclick="quitarDelCarrito(${index})">&times;</button>
+            </div>
+        `;
+    }).join('');
+
+    if (cartTotal) cartTotal.textContent = `$${total.toLocaleString('es-CO')} COP`;
+}
+
+function quitarDelCarrito(index) {
+    carrito.splice(index, 1);
+    actualizarCarritoUI();
+}
+
+// ==========================================
 // Modal Vista Rápida & Carrusel
 // ==========================================
 function setupQuickViewEvents() {
@@ -87,6 +179,7 @@ function setupQuickViewEvents() {
     const modal = document.getElementById('quickViewModal');
     const prevBtn = document.getElementById('prevPhotoBtn');
     const nextBtn = document.getElementById('nextPhotoBtn');
+    const addCartBtnModal = document.getElementById('quickViewAddCartBtn');
 
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
@@ -117,13 +210,24 @@ function setupQuickViewEvents() {
             actualizarImagenModal();
         });
     }
+
+    if (addCartBtnModal) {
+        addCartBtnModal.addEventListener('click', () => {
+            if (prendaSeleccionadaModal) {
+                const id = prendaSeleccionadaModal.id_prenda || prendaSeleccionadaModal.id;
+                agregarAlCarrito(null, id);
+                if (modal) modal.classList.remove('active');
+            }
+        });
+    }
 }
 
 function abrirVistaRapida(id) {
     const prenda = prendas.find(p => (p.id_prenda || p.id) === id);
     if (!prenda) return;
 
-    // Extraer array de fotos o foto única
+    prendaSeleccionadaModal = prenda;
+
     if (prenda.fotos && Array.isArray(prenda.fotos) && prenda.fotos.length > 0) {
         currentFotosModal = prenda.fotos;
     } else if (prenda.imagen_url || prenda.imagen) {
@@ -216,7 +320,6 @@ async function enviarSolicitudPrenda(e) {
         formData.append('usuario_id', usuarioSesion.id);
     }
 
-    // Recorrer los 3 inputs e incluir los archivos seleccionados
     let fotosCount = 0;
     photoInputs.forEach(input => {
         if (input.files && input.files[0]) {
@@ -251,7 +354,7 @@ async function enviarSolicitudPrenda(e) {
 // EDICIÓN DE PRENDAS POR EL DUEÑO O ADMIN
 // ==========================================
 function abrirEditarPrendaPropia(event, id) {
-    event.stopPropagation(); // Evitar que se abra la vista rápida al hacer clic en editar
+    event.stopPropagation();
 
     const prenda = prendas.find(p => (p.id_prenda || p.id) === id);
     if (!prenda) return;
@@ -277,7 +380,6 @@ if (formEditarPropia) {
         formData.append('marca', document.getElementById('editPropiaMarca').value);
         formData.append('precio', document.getElementById('editPropiaPrecio').value);
         
-        // Solo agregamos fotos si el usuario seleccionó nuevas
         const photoInputs = document.querySelectorAll('.editPropiaFotoInput');
         photoInputs.forEach(input => {
             if (input.files && input.files[0]) {
@@ -296,7 +398,7 @@ if (formEditarPropia) {
             alert('¡Prenda actualizada correctamente!');
             document.getElementById('modalEditarPropiaOverlay').classList.remove('active');
             document.getElementById('formEditarPropia').reset();
-            cargarProductosCliente(); // Recargar el catálogo
+            cargarProductosCliente();
         } catch (err) {
             console.error(err);
             alert('Ocurrió un error al actualizar la prenda.');
