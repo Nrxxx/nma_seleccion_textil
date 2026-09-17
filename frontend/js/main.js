@@ -206,7 +206,7 @@ async function confirmarReserva() {
         const abonoFormateado = abono.toLocaleString('es-CO');
 
         // Construir enlace de WhatsApp
-        const telefono = '573123342385';
+        const telefono = '573011907952';
         const mensaje = `Hola, acabo de realizar una reserva por $ ${totalFormateado}. Abonaré el 50% ($ ${abonoFormateado}) a la llave Nequi/Bre-B: @NEQUINIC0664\nAdjunto mi comprobante de pago:`;
         const urlWhatsApp = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 
