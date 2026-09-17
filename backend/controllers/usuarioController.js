@@ -17,6 +17,21 @@ export const registrarUsuario = async (req, res) => {
   try {
     const { nombre, email, password, rol } = req.body;
 
+    if (!nombre || !email || !password) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+
+    // Verificar si el correo ya existe en Supabase
+    const { data: usuarioExistente } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (usuarioExistente) {
+      return res.status(400).json({ error: 'El correo electrónico ya se encuentra registrado.' });
+    }
+
     // Generar el hash de la contraseña
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -30,6 +45,7 @@ export const registrarUsuario = async (req, res) => {
 
     res.status(201).json({ mensaje: 'Usuario registrado con éxito', usuario: data[0] });
   } catch (error) {
+    console.error('❌ Error en registrarUsuario:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -57,7 +73,7 @@ export const loginUsuario = async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    // Omitir el hash en la respuesta enviada al cliente
+    // Omitir la contraseña en la respuesta
     const { password: _, ...usuarioSinPassword } = usuario;
 
     res.json({ mensaje: 'Login exitoso', usuario: usuarioSinPassword });

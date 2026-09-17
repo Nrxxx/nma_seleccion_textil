@@ -19,9 +19,7 @@ function validarPermisosAdmin() {
     }
 }
 
-// ==========================================
 // MODERACIÓN DE PRENDAS SUBIDAS POR USUARIOS
-// ==========================================
 
 async function cargarSolicitudesAdmin() {
     const tbody = document.getElementById('tablaSolicitudesBody');
@@ -61,7 +59,7 @@ async function cargarSolicitudesAdmin() {
             `;
         }).join('');
     } catch (err) {
-        console.error('❌ Error al cargar solicitudes:', err.message);
+        console.error('Error al cargar solicitudes:', err.message);
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #c53030;">Error al conectar con el servidor de solicitudes.</td></tr>';
     }
 }
@@ -95,9 +93,7 @@ async function rechazarSolicitud(id) {
     }
 }
 
-// ==========================================
 // GESTIÓN DE RESERVAS Y ABONOS PENDIENTES
-// ==========================================
 
 async function cargarReservasAdmin() {
     const tbodyReservas = document.getElementById('tablaReservasBody');
@@ -146,7 +142,7 @@ async function cargarReservasAdmin() {
             `;
         }).join('');
     } catch (err) {
-        console.error('❌ Error al cargar reservas:', err.message);
+        console.error('Error al cargar reservas:', err.message);
         tbodyReservas.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #c53030;">Error al conectar con el servidor de ventas.</td></tr>';
     }
 }
@@ -188,9 +184,7 @@ async function cancelarReserva(idVenta) {
     }
 }
 
-// ==========================================
 // GESTIÓN DE INVENTARIO
-// ==========================================
 
 async function cargarPrendasAdmin() {
     try {
@@ -199,7 +193,7 @@ async function cargarPrendasAdmin() {
         prendas = await res.json();
         renderTabla(prendas);
     } catch (err) {
-        console.error('❌ Error:', err.message);
+        console.error('Error:', err.message);
         const tbody = document.getElementById('adminTableBody');
         if (tbody) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #c53030;">Error al conectar con el servidor.</td></tr>';

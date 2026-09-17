@@ -4,7 +4,7 @@ import supabase from '../config/database.js';
 // Tarea programada: Se ejecuta cada 10 minutos para liberar prendas vencidas
 export const iniciarCronJobs = () => {
   cron.schedule('*/10 * * * *', async () => {
-    console.log('🔍 Verificando reservas expiradas (24h transcurridas)...');
+    console.log('Verificando reservas expiradas (24h transcurridas)...');
     try {
       const ahora = new Date().toISOString();
 

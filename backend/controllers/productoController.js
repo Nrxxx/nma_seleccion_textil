@@ -8,7 +8,7 @@ export const obtenerProductos = async (req, res) => {
 
     if (error) throw error;
 
-    // Mapear para asegurar que 'fotos' siempre sea un arreglo utilizable en el carrusel
+    // Buscar para asegurar que 'fotos' siempre sea un arreglo utilizable en el carrusel
     const productosFormateados = data.map(p => {
       let fotosList = [];
       if (Array.isArray(p.fotos)) {
@@ -22,7 +22,7 @@ export const obtenerProductos = async (req, res) => {
       return {
         ...p,
         fotos: fotosList,
-        imagen_url: fotosList[0] || '' // Para retrocompatibilidad
+        imagen_url: fotosList[0] || '' // Para la retrocompatibilidad
       };
     });
 
@@ -56,12 +56,12 @@ export const actualizarProducto = async (req, res) => {
     
     let updateData = { nombre_prenda, marca, talla, precio: Number(precio) };
 
-    // Si mandan fotos como texto (como lo hace el admin desde el panel)
+    // Si mandan fotos como texto o url
     if (fotos || imagen_url) {
         updateData.fotos = fotos || (imagen_url ? [imagen_url] : []);
     }
 
-    // Si suben archivos nuevos (desde el frontend por el usuario)
+    // Si suben archivos nuevos desde el frontend por el usuario
     if (req.files && req.files.length > 0) {
         const baseUrl = `${req.protocol}://${req.get('host')}`;
         const fotosUrls = req.files.map(file => `${baseUrl}/uploads/${file.filename}`);

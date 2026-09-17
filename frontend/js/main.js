@@ -28,7 +28,7 @@ async function cargarProductosCliente() {
         prendas = await res.json();
         renderProductos(prendas);
     } catch (err) {
-        console.error('❌ Error al cargar productos:', err.message);
+        console.error('Error al cargar productos:', err.message);
         grid.innerHTML = '<p class="error-msg">No se pudieron cargar las prendas del catálogo.</p>';
     }
 }
@@ -169,6 +169,64 @@ function actualizarCarritoUI() {
 function quitarDelCarrito(index) {
     carrito.splice(index, 1);
     actualizarCarritoUI();
+}
+
+// ==========================================
+// Confirmar Reserva y Redireccionar a WhatsApp
+// ==========================================
+async function confirmarReserva() {
+    if (carrito.length === 0) {
+        alert('Tu carrito de reserva está vacío.');
+        return;
+    }
+
+    const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
+    const total = carrito.reduce((sum, item) => sum + Number(item.precio || item.precio_estimado || 0), 0);
+    const abono = total / 2;
+
+    try {
+        const bodyData = {
+            usuario_id: usuarioSesion ? usuarioSesion.id : null,
+            total: total,
+            detalles: carrito
+        };
+
+        const res = await fetch(API_VENTAS, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyData)
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || 'Error al procesar la reserva.');
+        }
+
+        const totalFormateado = total.toLocaleString('es-CO');
+        const abonoFormateado = abono.toLocaleString('es-CO');
+
+        // Construir enlace de WhatsApp
+        const telefono = '573123342385';
+        const mensaje = `Hola, acabo de realizar una reserva por $ ${totalFormateado}. Abonaré el 50% ($ ${abonoFormateado}) a la llave Nequi/Bre-B: @NEQUINIC0664\nAdjunto mi comprobante de pago:`;
+        const urlWhatsApp = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+        // Limpiar el carrito y cerrar modal antes de alertar
+        carrito = [];
+        actualizarCarritoUI();
+
+        const cartOverlay = document.getElementById('cartOverlay');
+        if (cartOverlay) cartOverlay.classList.remove('active');
+
+        // Alerta informativa unificada
+        alert(`¡RESERVA REGISTRADA CON ÉXITO!\n====================================\n💵 Total Compra: $ ${totalFormateado}\n💰 ABONO REQUERIDO (50%): $ ${abonoFormateado}\n====================================\n🔑 Llave / Usuario Nequi: @NEQUINIC0664\n🏦 Comercio: NMA Selección Textil\n\n⏳ Tienes 24 horas para transferir el abono de $ ${abonoFormateado}.\nAl presionar Aceptar serás redirigido a WhatsApp.`);
+
+        // Redirección directa garantizada sin bloqueo de pop-ups
+        window.location.href = urlWhatsApp;
+
+    } catch (err) {
+        console.error('❌ Error en confirmarReserva:', err.message);
+        alert(`No se pudo completar la reserva: ${err.message}`);
+    }
 }
 
 // ==========================================
@@ -345,7 +403,7 @@ async function enviarSolicitudPrenda(e) {
         document.getElementById('solicitudForm').reset();
         document.getElementById('solicitudModalOverlay').classList.remove('active');
     } catch (err) {
-        console.error('❌ Error al enviar la prenda:', err.message);
+        console.error('Error al enviar la prenda:', err.message);
         alert('Ocurrió un error al intentar enviar la solicitud.');
     }
 }

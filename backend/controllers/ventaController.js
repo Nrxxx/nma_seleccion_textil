@@ -11,7 +11,7 @@ export const obtenerVentas = async (req, res) => {
   }
 };
 
-// Crear/Registrar una nueva venta con abono del 50%
+// Crear o registrar una nueva venta con abono del 50%
 export const registrarVenta = async (req, res) => {
   try {
     const { usuario_id, total, detalles } = req.body;

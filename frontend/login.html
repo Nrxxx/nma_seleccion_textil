@@ -3,21 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión | NMA Selección Textil</title>
+    <title>Acceso | NMA Selección Textil</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-    <main style="max-width: 400px; margin: 80px auto; padding: 20px; text-align: center;">
-        <h2>NMA | Selección Textil</h2>
-        <p style="margin-bottom: 20px; color: #666;">Ingresa a tu cuenta</p>
+<body style="background: #f4f4f4; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0;">
+    <main style="max-width: 400px; width: 100%; margin: 20px; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+        <h2 style="margin-bottom: 5px;">NMA | Selección Textil</h2>
+        <p style="margin-bottom: 25px; color: #666; font-size: 0.95rem;">Ingresa a tu cuenta o regístrate</p>
         
+        <!-- Pestañas de Selección -->
+        <div style="display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee;">
+            <button id="tabLogin" style="flex: 1; padding: 10px; border: none; background: none; font-weight: bold; cursor: pointer; border-bottom: 3px solid #000; color: #000; font-size: 1rem;" onclick="mostrarTab('login')">Iniciar Sesión</button>
+            <button id="tabRegister" style="flex: 1; padding: 10px; border: none; background: none; font-weight: bold; cursor: pointer; color: #888; font-size: 1rem;" onclick="mostrarTab('register')">Registrarse</button>
+        </div>
+
+        <!-- Formulario: Iniciar Sesión -->
         <form id="loginForm" style="display: flex; flex-direction: column; gap: 15px;">
-            <input type="email" id="loginEmail" placeholder="Correo electrónico" required style="padding: 10px;">
-            <input type="password" id="loginPassword" placeholder="Contraseña" required style="padding: 10px;">
-            <button type="submit" style="padding: 12px; background: #000; color: #fff; border: none; cursor: pointer;">
+            <input type="email" id="loginEmail" placeholder="Correo electrónico" required style="padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="password" id="loginPassword" placeholder="Contraseña" required style="padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+            <button type="submit" style="padding: 12px; background: #000; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
                 Iniciar Sesión
             </button>
         </form>
+
+        <!-- Formulario: Registro -->
+        <form id="registerForm" style="display: none; flex-direction: column; gap: 15px;">
+            <input type="text" id="regNombre" placeholder="Nombre completo" required style="padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="email" id="regEmail" placeholder="Correo electrónico" required style="padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="password" id="regPassword" placeholder="Contraseña" required style="padding: 12px; border: 1px solid #ccc; border-radius: 4px;">
+            <button type="submit" style="padding: 12px; background: #2e7d32; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Crear Mi Cuenta
+            </button>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 0.9rem;">
+            <a href="index.html" style="color: #666; text-decoration: none;">&larr; Volver al catálogo</a>
+        </p>
     </main>
 
     <script src="js/login.js"></script>

@@ -186,7 +186,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* --- Barra de Filtros (Chips) --- */
+/* Barra de Filtros */
 .filter-chips {
     display: flex;
     gap: 10px;
@@ -311,7 +311,7 @@ body {
     background-color: var(--accent-color);
 }
 
-/* --- Modal y Panel del Carrito --- */
+/* Modal y Panel del Carrito */
 .cart-overlay {
     position: fixed;
     top: 0;
@@ -432,9 +432,7 @@ body {
     cursor: pointer;
 }
 
-/* ==========================================
-   ESTILOS DE MODALES GENERALES & VISTA RÁPIDA
-   ========================================== */
+/* ESTILOS DE MODALES GENERALES & VISTA RÁPIDA */
 .modal-overlay {
     position: fixed;
     top: 0; 
@@ -598,9 +596,7 @@ body {
     color: var(--primary-color);
 }
 
-/* ==========================================
-   MEDIA QUERIES - RESPONSIVE DESIGN (MOBILE)
-   ========================================== */
+/* MEDIA QUERIES - RESPONSIVE DESIGN */
 
 @media (max-width: 768px) {
     .header-container {

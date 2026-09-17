@@ -35,7 +35,7 @@ export const crearSolicitud = async (req, res) => {
       solicitud: data[0] 
     });
   } catch (error) {
-    console.error('❌ Error en crearSolicitud:', error.message);
+    console.error('Error en crearSolicitud:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -55,7 +55,7 @@ export const obtenerSolicitudesPendientes = async (req, res) => {
   }
 };
 
-// 3. Aprobar solicitud y publicar en el catálogo con todas sus fotos
+// 3. Aprobar solicitud y publicar en el catalogo con todas sus fotos
 export const aprobarSolicitud = async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,7 +72,7 @@ export const aprobarSolicitud = async (req, res) => {
     const fotosArray = Array.isArray(solicitud.fotos) ? solicitud.fotos : [solicitud.fotos];
     const primerFoto = fotosArray[0] || '';
 
-    // Insertamos guardando tanto 'fotos' como 'imagen_url' por compatibilidad de la tabla
+    // Se inserta guardando tanto 'fotos' como 'imagen_url' por la compatibilidad de la tabla
     const { error: errInsert } = await supabase
       .from('productos')
       .insert([{
@@ -83,11 +83,11 @@ export const aprobarSolicitud = async (req, res) => {
         fotos: fotosArray,
         imagen_url: primerFoto,
         estado: 'disponible',
-        usuario_id: solicitud.usuario_id // Vinculamos la prenda al dueño
+        usuario_id: solicitud.usuario_id // Se vincula la prenda al dueño
       }]);
 
     if (errInsert) {
-      console.error('❌ Error de Supabase al insertar producto:', errInsert.message);
+      console.error('Error de Supabase al insertar producto:', errInsert.message);
       throw errInsert;
     }
 
@@ -99,7 +99,7 @@ export const aprobarSolicitud = async (req, res) => {
 
     res.json({ mensaje: 'Solicitud aprobada e ingresada al inventario' });
   } catch (error) {
-    console.error('❌ Error en aprobarSolicitud:', error.message);
+    console.error('Error en aprobarSolicitud:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
