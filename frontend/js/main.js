@@ -58,6 +58,9 @@ function renderProductos(lista) {
         const usuarioSesion = JSON.parse(localStorage.getItem('usuario_nma'));
         const esDuenioOAdmin = usuarioSesion && (usuarioSesion.id === p.usuario_id || usuarioSesion.rol === 'admin');
 
+        // Validar si la prenda está disponible o reservada
+        const estaDisponible = (!p.estado || p.estado.toLowerCase() === 'disponible');
+
         return `
             <div class="product-card" onclick="abrirVistaRapida(${id})">
                 <div class="product-image-container">
@@ -68,9 +71,15 @@ function renderProductos(lista) {
                     <p class="product-meta">Talla: ${escapeHTML(p.talla || 'Única')} | Marca: ${escapeHTML(p.marca || 'N/A')}</p>
                     <p class="product-price">$${precio} COP</p>
                     
-                    <button class="add-cart-btn" onclick="agregarAlCarrito(event, ${id})">
-                        <i class="fa-solid fa-cart-shopping"></i> Reservar
-                    </button>
+                    ${estaDisponible ? `
+                        <button class="add-cart-btn" onclick="agregarAlCarrito(event, ${id})">
+                            <i class="fa-solid fa-cart-shopping"></i> Reservar
+                        </button>
+                    ` : `
+                        <button class="add-cart-btn" disabled style="background: #888; cursor: not-allowed;">
+                            <i class="fa-solid fa-lock"></i> Reservado
+                        </button>
+                    `}
 
                     ${esDuenioOAdmin ? `
                         <button style="margin-top: 8px; width: 100%; padding: 8px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #333;" 
@@ -116,6 +125,12 @@ function agregarAlCarrito(e, id) {
 
     const prenda = prendas.find(p => (p.id_prenda || p.id) === id);
     if (!prenda) return;
+
+    // Seguro contra reservas dobles
+    if (prenda.estado && prenda.estado.toLowerCase() !== 'disponible') {
+        alert('Esta prenda ya fue reservada por otro usuario.');
+        return;
+    }
 
     const yaExiste = carrito.some(item => (item.id_prenda || item.id) === id);
     if (yaExiste) {
@@ -272,6 +287,11 @@ function setupQuickViewEvents() {
     if (addCartBtnModal) {
         addCartBtnModal.addEventListener('click', () => {
             if (prendaSeleccionadaModal) {
+                // Verificar estado antes de enviar al carrito
+                if (prendaSeleccionadaModal.estado && prendaSeleccionadaModal.estado.toLowerCase() !== 'disponible') {
+                    alert('Esta prenda ya no está disponible para reservar.');
+                    return;
+                }
                 const id = prendaSeleccionadaModal.id_prenda || prendaSeleccionadaModal.id;
                 agregarAlCarrito(null, id);
                 if (modal) modal.classList.remove('active');
@@ -302,6 +322,7 @@ function abrirVistaRapida(id) {
     const marcaEl = document.getElementById('quickViewMarca');
     const precioEl = document.getElementById('quickViewPrecio');
     const modal = document.getElementById('quickViewModal');
+    const addCartBtnModal = document.getElementById('quickViewAddCartBtn');
 
     if (titleEl) titleEl.textContent = prenda.nombre_prenda || prenda.nombre || '';
     if (tallaEl) tallaEl.textContent = prenda.talla || 'Única';
@@ -309,6 +330,21 @@ function abrirVistaRapida(id) {
     
     const precio = Number(prenda.precio || prenda.precio_estimado || 0).toLocaleString('es-CO');
     if (precioEl) precioEl.textContent = `$${precio} COP`;
+
+    // Lógica para bloquear botón en Vista Rápida si ya está reservado
+    if (addCartBtnModal) {
+        if (!prenda.estado || prenda.estado.toLowerCase() === 'disponible') {
+            addCartBtnModal.innerHTML = 'Reservar Prenda';
+            addCartBtnModal.disabled = false;
+            addCartBtnModal.style.background = ''; 
+            addCartBtnModal.style.cursor = 'pointer';
+        } else {
+            addCartBtnModal.innerHTML = '<i class="fa-solid fa-lock"></i> Prenda Reservada';
+            addCartBtnModal.disabled = true;
+            addCartBtnModal.style.background = '#888';
+            addCartBtnModal.style.cursor = 'not-allowed';
+        }
+    }
 
     if (modal) modal.classList.add('active');
 }

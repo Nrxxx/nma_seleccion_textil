@@ -103,8 +103,12 @@ async function cargarReservasAdmin() {
         const res = await fetch(API_VENTAS);
         if (!res.ok) throw new Error('Error al obtener reservas');
         
-        const ventas = await res.json();
-        const pendientes = ventas.filter(v => v.estado_pago === 'pendiente_abono');
+        const ventasRes = await res.json();
+        
+        // Control para extraer el array correctamente (soporte por si viene { data: [...] })
+        const ventasArray = Array.isArray(ventasRes) ? ventasRes : (ventasRes.data || []);
+        
+        const pendientes = ventasArray.filter(v => v.estado_pago === 'pendiente_abono');
 
         if (!pendientes || pendientes.length === 0) {
             tbodyReservas.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No hay abonos pendientes por revisar.</td></tr>';
